@@ -1,0 +1,32 @@
+{
+  "name": "express-rest-orm",
+  "version": "0.0.0",
+  "description": "rest interface generation for sequelize models",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dominikschreiber/express-rest-orm"
+  },
+  "keywords": [
+    "rest",
+    "rest-api",
+    "orm",
+    "express",
+    "sequelize"
+  ],
+  "author": "Dominik Schreiber <dominik@dominikschreiber.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dominikschreiber/express-rest-orm/issues"
+  },
+  "homepage": "https://github.com/dominikschreiber/express-rest-orm",
+  "dependencies": {
+    "express": "^4.12.3",
+    "lodash": "^3.8.0",
+    "sequelize": "^2.1.0",
+    "sqlite3": "^3.0.7"
+  }
+}
