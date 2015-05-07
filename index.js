@@ -1,4 +1,12 @@
-var _ = require('lodash');
+'use strict';
+
+var _ = require('lodash')
+  , EasyXml = require('easyxml')
+  , xmldefaults = {
+  		singularizeChildren: true,
+  		allowAttributes: true,
+  		manifest: true
+    };
 
 /**
  * creates an express router middleware that
@@ -10,6 +18,18 @@ var _ = require('lodash');
  * mounted at '/api'
  */
 module.exports = function(models) {
+	/**
+	 * creates the {{pseudo-mime}} => {{serialization}}
+	 * mappings required by the res.format of express
+	 */
+	function format(xml, res, json) {
+		return {
+			xml: function() { res.send(xml.render(json)); },
+			json: function() { res.send(json); },
+			default: function() { res.send(json); }
+		};
+	}
+
 	/**
 	 * turns a list of sequelize items to plain javascript objects
 	 * @see #cleanitem(item)
@@ -25,6 +45,16 @@ module.exports = function(models) {
 	 */
 	function cleanitem(item) {
 		return _.omit(item.dataValues, 'createdAt', 'updatedAt');
+	}
+
+	/**
+	 * creates an xml renderer based on EasyXml
+	 * given a root element (normally model.getTableName())
+	 */
+	function xmlbuilder(root) {
+		return new EasyXml(_.extend({
+			rootElement: root
+		}, xmldefaults));
 	}
 
 	var api = require('express').Router();
@@ -48,50 +78,78 @@ module.exports = function(models) {
 	 */
 	_.each(models, function(model) {
 		var collection = '/' + model.getTableName()
-		  , resource = collection + '/:id';
+		  , resource = collection + '/:id'
+		  , xml = xmlbuilder(model.getTableName());
 
-		/**
-		 * lists urls to all resources specified by `model`, e.g.
-		 *
-		 * ```
-		 * ['/api/foo/1', '/api/foo/2']
-		 * ```
-		 *
-		 * if called with ?include_docs=true, returns the docs instead, e.g.
-		 *
-		 * ```
-		 * [{id: 1, name: goo}, {id: 2, name: gle}]
-		 * ```
-		 */
-		api.get(collection, function(req, res, next) {
-			if (req.query.include_docs) {
-				model.findAll().then(function(results) {
-					res.send(cleanitems(results));
+		/** /:model */
+		api.route(collection)
+			/**
+			 * lists urls to all resources specified by `model`, e.g.
+			 *
+			 * ```
+			 * ['/api/foo/1', '/api/foo/2']
+			 * ```
+			 *
+			 * if called with ?include_docs=true, returns the docs instead, e.g.
+			 *
+			 * ```
+			 * [{id: 1, name: goo}, {id: 2, name: gle}]
+			 * ```
+			 */
+			.get(function(req, res, next) {
+				function then(items) {
+					res.format(format(xml, res, items));
 					next();
-				});
-			} else {
-				model.findAll({
-					attributes: ['id']
-				}).then(function(results) {
-					res.send(_.map(results, function(result) {
-						return [req.baseUrl + collection, result.id].join('/');
-					}));
-					next();
-				});
-			}
-		});
+				}
 
-		/**
-		 * gets the single resource at '/:resource/:id', e.g.
-		 *
-		 * {id: 1, name: goo}
-		 */
-		api.get(resource, function(req, res, next) {
-			model.findOne(req.params.id).then(function(result) {
-				res.send(cleanitem(result));
-				next();
+				if (req.query.include_docs) {
+					model.findAll().then(function(results) {
+						then(cleanitems(results));
+					});
+				} else {
+					model.findAll({
+						attributes: ['id']
+					}).then(function(results) {
+						then(_.map(results, function(result) {
+								return [req.baseUrl + collection, result.id].join('/');
+							}));
+					});
+				}
+			})
+			.post(function(req, res, next) {
+
+			})
+			.put(function(req, res, next) {
+
+			})
+			.delete(function(req, res, next) {
+
 			});
-		})
+
+		/** /:model/:id */
+		api.route(resource)
+			/**
+			 * gets the single resource at '/:resource/:id', e.g.
+			 *
+			 * {id: 1, name: goo}
+			 */
+			.get(function(req, res, next) {
+				model.findOne(req.params.id).then(function(result) {
+					var item = cleanitem(result);
+
+					res.format(format(xml, res, item));
+					next();
+				});
+			})
+			.post(function(req, res, next) {
+
+			})
+			.put(function(req, res, next) {
+
+			})
+			.delete(function(req, res, next) {
+
+			});
 	});
 
 	return api;
