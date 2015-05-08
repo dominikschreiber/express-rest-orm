@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express')
   , app = express()
   , Sequelize = require('sequelize')
