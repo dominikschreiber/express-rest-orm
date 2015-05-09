@@ -96,7 +96,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:model', function() {
+    describe('GET  /:resource', function() {
         it('should list all resource urls relative to /', function(done) {
             request
                 .get('/users')
@@ -112,7 +112,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:model?include_docs=true', function() {
+    describe('GET  /:resource?include_docs=true', function() {
         it('should list all resources as documents rather than urls', function(done) {
             request
                 .get('/users?include_docs=true')
@@ -128,7 +128,7 @@ describe('', function() {
         });
     });
 
-    describe('POST /:model', function() {
+    describe('POST /:resource', function() {
         it('should create a new resource from req.body', function(done) {
             request
                 .post('/users')
@@ -143,7 +143,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:model/:resource', function() {
+    describe('GET  /:resource/:id', function() {
         it('should get the resource specified', function(done) {
             request
                 .get('/users/1')
@@ -157,7 +157,7 @@ describe('', function() {
         });
     });
 
-    describe('POST /:model/:resource', function() {
+    describe('POST /:resource/:id', function() {
         it('should return an error as this is not allowed', function(done) {
             request
                 .post('/users/1')
@@ -169,6 +169,29 @@ describe('', function() {
                     assert.ok(_.has(result.body, 'reason'));
                     assert.ok(_.has(result.body, 'url'));
                     done();
+                });
+        });
+    });
+
+    describe('PUT  /:resource/:id', function() {
+        it('should update the resource with the data from req.body', function(done) {
+            request
+                .put('/users/1')
+                .set('Accept', 'application/json')
+                .send({ givenname: 'Rick', lastname: 'Astley' })
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+
+                    request
+                        .get(result.body)
+                        .set('Accept', 'application/json')
+                        .expect(200)
+                        .end(function(e, r) {
+                            if (e) { done(e); }
+                            assert.deepEqual(r.body, { givenname: 'Rick', lastname: 'Astley', id: 1 });
+                            done();
+                        });
                 });
         });
     });
