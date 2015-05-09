@@ -40,8 +40,7 @@ var expressRestOrm = require('../lib/index')
   , tests = []
 
   , app = false
-  , request = false
-  , baseurl = '/';
+  , request = false;
 
 describe('', function() {
     beforeEach(function(done) {
@@ -73,7 +72,7 @@ describe('', function() {
 
             app = express();
             app.use(bodyparser.json());
-            app.use(baseurl, expressRestOrm(models));
+            app.use('/', expressRestOrm(models));
 
             request = supertest(app);
             
@@ -81,57 +80,57 @@ describe('', function() {
         });
     });
 
-    describe('GET  ' + baseurl, function() {
+    describe('GET  /', function() {
         it('should list all resource endpoints relative to /', function(done) {
             request
-                .get(baseurl)
+                .get('/')
                 .set('Accept', 'application/json')
                 .expect(200)
                 .end(function(err, result) {
                     if (err) { done(err); }
                     assert.deepEqual(result.body, _.map(models, function(model) {
-                        return baseurl + model.getTableName();
+                        return '/' + model.getTableName();
                     }));
                     done();
                 });
         });
     });
 
-    describe('GET  ' + baseurl + ':model', function() {
-        it('should list all resource urls relative to ' + baseurl, function(done) {
+    describe('GET  / model', function() {
+        it('should list all resource urls relative to /', function(done) {
             request
-                .get(baseurl + 'users')
+                .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
                 .end(function(err, result) {
                     if (err) { done(err); }
                     assert.deepEqual(result.body, _.map(_.range(1, users.length + 1), function(i) {
-                        return baseurl + 'users/' + i;
+                        return '/users/' + i;
                     }));
                     done();
                 });
         });
     });
 
-    describe('POST ' + baseurl + ':model', function() {
+    describe('POST /:model', function() {
         it('should create a new resource from req.body', function(done) {
             request
-                .post(baseurl + 'users')
+                .post('/users')
                 .set('Accept', 'application/json')
                 .send({ givenname: 'Rick', lastname: 'Astley' })
                 .expect(200)
                 .end(function(err, result) {
                     if (err) { done(err); }
-                    assert.equal(result.body, baseurl + 'users/' + 3);
+                    assert.equal(result.body, '/users/3');
                     done();
                 });
         });
     });
 
-    describe('GET  ' + baseurl +  ':model/:resource', function() {
+    describe('GET  /:model/:resource', function() {
         it('should get the resource specified', function(done) {
             request
-                .get(baseurl + 'users/1')
+                .get('/users/1')
                 .set('Accept', 'application/json')
                 .expect(200)
                 .end(function(err, result) {
@@ -142,10 +141,10 @@ describe('', function() {
         });
     });
 
-    describe('POST ' + baseurl + ':model/:resource', function() {
+    describe('POST /:model/:resource', function() {
         it('should return an error as this is not allowed', function(done) {
             request
-                .post(baseurl + 'users/1')
+                .post('/users/1')
                 .set('Accept', 'application/json')
                 .send({ givenname: 'Rick', lastname: 'Astley' })
                 .expect(400)
