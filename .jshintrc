@@ -1,0 +1,17 @@
+{
+    "latedef": true,
+    "plusplus": true,
+    "quotmark": "single",
+    "undef": true,
+    "unused": "strict",
+    "strict": true,
+    
+    "maxdepth": 2,
+    
+    "debug": true,
+    "globalstrict": true,
+    "laxcomma": true,
+    
+    "node": true,
+    "mocha": true
+}
