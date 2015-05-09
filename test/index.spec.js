@@ -96,7 +96,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  / model', function() {
+    describe('GET  /:model', function() {
         it('should list all resource urls relative to /', function(done) {
             request
                 .get('/users')
@@ -106,6 +106,22 @@ describe('', function() {
                     if (err) { done(err); }
                     assert.deepEqual(result.body, _.map(_.range(1, users.length + 1), function(i) {
                         return '/users/' + i;
+                    }));
+                    done();
+                });
+        });
+    });
+
+    describe('GET  /:model?include_docs=true', function() {
+        it('should list all resources as documents rather than urls', function(done) {
+            request
+                .get('/users?include_docs=true')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.deepEqual(result.body, _.map(users, function(user) {
+                        return _.omit(user.dataValues, ['createdAt', 'updatedAt']);
                     }));
                     done();
                 });
