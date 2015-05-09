@@ -81,7 +81,7 @@ describe('', function() {
         });
     });
 
-    describe('GET ' + baseurl, function() {
+    describe('GET  ' + baseurl, function() {
         it('should list all resource endpoints relative to /', function(done) {
             request
                 .get(baseurl)
@@ -97,7 +97,7 @@ describe('', function() {
         });
     });
 
-    describe('GET ' + baseurl + ':model', function() {
+    describe('GET  ' + baseurl + ':model', function() {
         it('should list all resource urls relative to ' + baseurl, function(done) {
             request
                 .get(baseurl + 'users')
@@ -128,8 +128,18 @@ describe('', function() {
         });
     });
 
-    describe('GET ' + baseurl +  ':model/:resource', function() {
-
+    describe('GET  ' + baseurl +  ':model/:resource', function() {
+        it('should get the resource specified', function(done) {
+            request
+                .get(baseurl + 'users/1')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.deepEqual(result.body, _.omit(users[0].dataValues, ['createdAt', 'updatedAt']));
+                    done();
+                });
+        });
     });
 
     describe('POST ' + baseurl + ':model/:resource', function() {
