@@ -112,99 +112,43 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:resource -H "Accept: application/json"', function() {
-        it('should deliver /:resource as application/json', function(done) {
-            request
-                .get('/users')
-                .set('Accept', 'application/json')
-                .expect(200)
-                .expect('Content-Type', new RegExp('application/json', 'g'))
-                .end(done);
+    _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
+        describe('GET  /:resource -H "Accept: ' + mime + '"', function() {
+            it('should deliver /:resource as ' + mime, function(done) {
+                request
+                    .get('/users')
+                    .set('Accept', mime)
+                    .expect(200)
+                    .expect('Content-Type', new RegExp(mime, 'g'))
+                    .end(done);
+            });
         });
     });
 
-    describe('GET  /:resource -H "Accept: application/xml"', function() {
-        it('should deliver /:resource as application/xml', function(done) {
-            request
-                .get('/users')
-                .set('Accept', 'application/xml')
-                .expect(200)
-                .expect('Content-Type', new RegExp('application/xml', 'g'))
-                .end(done);
-        });
-    });
+    _.each(_.pairs({
+        json: 'application/json',
+        xml: 'application/xml',
+        yml: 'text/x-yaml'
+    }), function(endingandmime) {
+        describe('GET  /:resource.' + endingandmime[0], function() {
+            it('should be equivalent to `GET /:resource` with `Accept: ' + endingandmime[1] + '`', function(done) {
+                request
+                    .get('/users.' + endingandmime[0])
+                    .expect(200)
+                    .end(function(err, actual) {
+                        if (err) { done(err); }
 
-    describe('GET  /:resource -H "Accept: text/x-yaml"', function() {
-        it('should deliver /:resource as text/x-yaml', function(done) {
-            request
-                .get('/users')
-                .set('Accept', 'text/x-yaml')
-                .expect(200)
-                .expect('Content-Type', new RegExp('text/x-yaml', 'g'))
-                .end(done);
-        });
-    });
-
-    describe('GET  /:resource.json', function() {
-        it('should be equivalent to `GET /:resource` with `Accept: application/json`', function(done) {
-            request
-                .get('/users.json')
-                .expect(200)
-                .end(function(err, actual) {
-                    if (err) { done(err); }
-
-                    request
-                        .get('/users')
-                        .set('Accept', 'application/json')
-                        .expect(200)
-                        .end(function(e, expected) {
-                            if (e) { done(e); }
-                            assert.deepEqual(actual.text, expected.text);
-                            done();
-                        });
-                });
-        });
-    });
-
-    describe('GET  /:resource.xml', function() {
-        it('should be equivalent to `GET /:resource` with `Accept: application/xml`', function(done) {
-            request
-                .get('/users.xml')
-                .expect(200)
-                .end(function(err, actual) {
-                    if (err) { done(err); }
-
-                    request
-                        .get('/users')
-                        .set('Accept', 'application/xml')
-                        .expect(200)
-                        .end(function(e, expected) {
-                            if (e) { done(e); }
-                            assert.deepEqual(actual.text, expected.text);
-                            done();
-                        });
-                });
-        });
-    });
-
-    describe('GET  /:resource.yml', function() {
-        it('should be equivalent to `GET /:resource` with `Accept: text/x-yaml`', function(done) {
-            request
-                .get('/users.yml')
-                .expect(200)
-                .end(function(err, actual) {
-                    if (err) { done(err); }
-
-                    request
-                        .get('/users')
-                        .set('Accept', 'text/x-yaml')
-                        .expect(200)
-                        .end(function(e, expected) {
-                            if (e) { done(e); }
-                            assert.deepEqual(actual.text, expected.text);
-                            done();
-                        });
-                });
+                        request
+                            .get('/users')
+                            .set('Accept', endingandmime[1])
+                            .expect(200)
+                            .end(function(e, expected) {
+                                if (e) { done(e); }
+                                assert.deepEqual(actual.text, expected.text);
+                                done();
+                            });
+                    });
+            });
         });
     });
 
@@ -250,6 +194,46 @@ describe('', function() {
                     assert.deepEqual(result.body, _.omit(users[0].dataValues, ['createdAt', 'updatedAt']));
                     done();
                 });
+        });
+    });
+
+    _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
+        describe('GET  /:resource/:id -H "Accept: ' + mime + '"', function() {
+            it('should deliver /:resource/:id as ' + mime, function(done) {
+                request
+                    .get('/users/1')
+                    .set('Accept', mime)
+                    .expect(200)
+                    .expect('Content-Type', new RegExp(mime, 'g'))
+                    .end(done);
+            });
+        });
+    });
+
+    _.each(_.pairs({
+        json: 'application/json',
+        xml: 'application/xml',
+        yml: 'text/x-yaml'
+    }), function(extandformat) {
+        describe('GET  /:resource/:id.' + extandformat[0], function() {
+            it('should be equivalent to `GET /:resource/:id` with `Accept: ' + extandformat[1] + '`', function(done) {
+                request
+                    .get('/users/1.' + extandformat[0])
+                    .expect(200)
+                    .end(function(err, actual) {
+                        if (err) { done(err); }
+
+                        request
+                            .get('/users/1')
+                            .set('Accept', extandformat[1])
+                            .expect(200)
+                            .end(function(e, expected) {
+                                if (e) { done(e); }
+                                assert.deepEqual(actual.text, expected.text);
+                                done();
+                            });
+                    });
+            });
         });
     });
 
