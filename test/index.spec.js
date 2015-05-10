@@ -112,6 +112,39 @@ describe('', function() {
         });
     });
 
+    describe('GET  /:resource -H "Accept: application/json"', function() {
+        it('should deliver /:resource as application/json', function(done) {
+            request
+                .get('/users')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .expect('Content-Type', new RegExp('application/json', 'g'))
+                .end(done);
+        });
+    });
+
+    describe('GET  /:resource -H "Accept: application/xml"', function() {
+        it('should deliver /:resource as application/xml', function(done) {
+            request
+                .get('/users')
+                .set('Accept', 'application/xml')
+                .expect(200)
+                .expect('Content-Type', new RegExp('application/xml', 'g'))
+                .end(done);
+        });
+    });
+
+    describe('GET  /:resource -H "Accept: text/x-yaml"', function() {
+        it('should deliver /:resource as text/x-yaml', function(done) {
+            request
+                .get('/users')
+                .set('Accept', 'text/x-yaml')
+                .expect(200)
+                .expect('Content-Type', new RegExp('text/x-yaml', 'g'))
+                .end(done);
+        });
+    });
+
     describe('GET  /:resource.json', function() {
         it('should be equivalent to `GET /:resource` with `Accept: application/json`', function(done) {
             request
@@ -144,6 +177,27 @@ describe('', function() {
                     request
                         .get('/users')
                         .set('Accept', 'application/xml')
+                        .expect(200)
+                        .end(function(e, expected) {
+                            if (e) { done(e); }
+                            assert.deepEqual(actual.text, expected.text);
+                            done();
+                        });
+                });
+        });
+    });
+
+    describe('GET  /:resource.yml', function() {
+        it('should be equivalent to `GET /:resource` with `Accept: text/x-yaml`', function(done) {
+            request
+                .get('/users.yml')
+                .expect(200)
+                .end(function(err, actual) {
+                    if (err) { done(err); }
+
+                    request
+                        .get('/users')
+                        .set('Accept', 'text/x-yaml')
                         .expect(200)
                         .end(function(e, expected) {
                             if (e) { done(e); }

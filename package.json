@@ -29,7 +29,8 @@
     "lodash": "^3.8.0",
     "promise": "^7.0.1",
     "sequelize": "^2.1.0",
-    "sqlite3": "^3.0.7"
+    "sqlite3": "^3.0.7",
+    "yamljs": "^0.2.2"
   },
   "devDependencies": {
     "body-parser": "^1.12.3",
