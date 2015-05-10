@@ -112,6 +112,48 @@ describe('', function() {
         });
     });
 
+    describe('GET  /:resource.json', function() {
+        it('should be equivalent to `GET /:resource` with `Accept: application/json`', function(done) {
+            request
+                .get('/users.json')
+                .expect(200)
+                .end(function(err, actual) {
+                    if (err) { done(err); }
+
+                    request
+                        .get('/users')
+                        .set('Accept', 'application/json')
+                        .expect(200)
+                        .end(function(e, expected) {
+                            if (e) { done(e); }
+                            assert.deepEqual(actual.text, expected.text);
+                            done();
+                        });
+                });
+        });
+    });
+
+    describe('GET  /:resource.xml', function() {
+        it('should be equivalent to `GET /:resource` with `Accept: application/xml`', function(done) {
+            request
+                .get('/users.xml')
+                .expect(200)
+                .end(function(err, actual) {
+                    if (err) { done(err); }
+
+                    request
+                        .get('/users')
+                        .set('Accept', 'application/xml')
+                        .expect(200)
+                        .end(function(e, expected) {
+                            if (e) { done(e); }
+                            assert.deepEqual(actual.text, expected.text);
+                            done();
+                        });
+                });
+        });
+    });
+
     describe('GET  /:resource?include_docs=true', function() {
         it('should list all resources as documents rather than urls', function(done) {
             request
