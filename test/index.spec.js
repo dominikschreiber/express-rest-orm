@@ -166,6 +166,34 @@ describe('', function() {
         });
     });
 
+    describe('   GET /:resource?offset=:offset', function() {
+        it('should start listing resources after :offset entries', function(done) {
+            request
+                .get('/users?offset=1')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.deepEqual(result.body, ['/users/' + users.hanna.id]);
+                    done();
+                });
+        });
+    });
+
+    describe('   GET /:resource?limit=:limit', function() {
+        it('should return up to :limit urls', function(done) {
+            request
+                .get('/users?limit=1')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.equal(result.body.length, 1);
+                    done();
+                });
+        });
+    });
+
     describe('  POST /:resource', function() {
         it('should create a new resource from req.body', function(done) {
             User.count().then(function(len) {
