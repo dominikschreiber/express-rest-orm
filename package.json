@@ -4,7 +4,7 @@
   "description": "rest interface generation for sequelize models",
   "main": "lib/index.js",
   "scripts": {
-    "test": "multi='spec=- travis-cov=-' ./node_modules/.bin/mocha --require blanket --reporter mocha-multi"
+    "test": "./node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter | ./node_modules/.bin/coveralls"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,9 @@
   "devDependencies": {
     "blanket": "^1.1.7",
     "body-parser": "^1.12.3",
+    "coveralls": "^2.11.2",
     "mocha": "^2.2.4",
+    "mocha-lcov-reporter": "0.0.2",
     "mocha-multi": "^0.7.1",
     "supertest": "^0.15.0",
     "travis-cov": "^0.2.5"
