@@ -80,7 +80,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /', function() {
+    describe('   GET /', function() {
         it('should list all resource endpoints relative to /', function(done) {
             request
                 .get('/')
@@ -96,7 +96,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:resource', function() {
+    describe('   GET /:resource', function() {
         it('should list all resource urls relative to /', function(done) {
             request
                 .get('/users')
@@ -113,7 +113,7 @@ describe('', function() {
     });
 
     _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
-        describe('GET  /:resource -H "Accept: ' + mime + '"', function() {
+        describe('   GET /:resource -H "Accept: ' + mime + '"', function() {
             it('should deliver /:resource as ' + mime, function(done) {
                 request
                     .get('/users')
@@ -130,7 +130,7 @@ describe('', function() {
         xml: 'application/xml',
         yml: 'text/x-yaml'
     }), function(endingandmime) {
-        describe('GET  /:resource.' + endingandmime[0], function() {
+        describe('   GET /:resource.' + endingandmime[0], function() {
             it('should be equivalent to `GET /:resource` with `Accept: ' + endingandmime[1] + '`', function(done) {
                 request
                     .get('/users.' + endingandmime[0])
@@ -152,7 +152,7 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:resource?include_docs=true', function() {
+    describe('   GET /:resource?include_docs=true', function() {
         it('should list all resources as documents rather than urls', function(done) {
             request
                 .get('/users?include_docs=true')
@@ -168,7 +168,7 @@ describe('', function() {
         });
     });
 
-    describe('POST /:resource', function() {
+    describe('  POST /:resource', function() {
         it('should create a new resource from req.body', function(done) {
             request
                 .post('/users')
@@ -183,7 +183,26 @@ describe('', function() {
         });
     });
 
-    describe('GET  /:resource/:id', function() {
+    describe('DELETE /:resource', function() {
+        it('should delete all resources of type :resource', function(done) {
+            User.count().then(function(numentries) {
+                assert.ok(numentries > 0);
+                request
+                    .delete('/users')
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .end(function(err) {
+                        if (err) { done(err); }
+                        User.count().then(function(numentries) {
+                            assert.equal(numentries, 0);
+                            done();
+                        });
+                    });
+            });
+        });
+    });
+
+    describe('   GET /:resource/:id', function() {
         it('should get the resource specified', function(done) {
             request
                 .get('/users/1')
@@ -198,7 +217,7 @@ describe('', function() {
     });
 
     _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
-        describe('GET  /:resource/:id -H "Accept: ' + mime + '"', function() {
+        describe('   GET /:resource/:id -H "Accept: ' + mime + '"', function() {
             it('should deliver /:resource/:id as ' + mime, function(done) {
                 request
                     .get('/users/1')
@@ -215,7 +234,7 @@ describe('', function() {
         xml: 'application/xml',
         yml: 'text/x-yaml'
     }), function(extandformat) {
-        describe('GET  /:resource/:id.' + extandformat[0], function() {
+        describe('   GET /:resource/:id.' + extandformat[0], function() {
             it('should be equivalent to `GET /:resource/:id` with `Accept: ' + extandformat[1] + '`', function(done) {
                 request
                     .get('/users/1.' + extandformat[0])
@@ -237,7 +256,7 @@ describe('', function() {
         });
     });
 
-    describe('POST /:resource/:id', function() {
+    describe('  POST /:resource/:id', function() {
         it('should return an error as this is not allowed', function(done) {
             request
                 .post('/users/1')
@@ -253,7 +272,7 @@ describe('', function() {
         });
     });
 
-    describe('PUT  /:resource/:id', function() {
+    describe('   PUT /:resource/:id', function() {
         it('should update the resource with the data from req.body', function(done) {
             request
                 .put('/users/1')
@@ -272,6 +291,22 @@ describe('', function() {
                             assert.deepEqual(r.body, { givenname: 'Rick', lastname: 'Astley', id: 1 });
                             done();
                         });
+                });
+        });
+    });
+
+    describe('DELETE /:resource/:id', function() {
+        it('should delete the resource', function(done) {
+            request
+                .delete('/users/1')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err) {
+                    if (err) { done(err); }
+                    User.findOne(1).then(function(result) {
+                        assert.equal(result, null);
+                        done();
+                    });
                 });
         });
     });
