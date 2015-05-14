@@ -1,9 +1,9 @@
 # express-rest-orm
 [![travis](https://img.shields.io/travis/dominikschreiber/express-rest-orm.svg?style=flat-square)](https://travis-ci.org/dominikschreiber/express-rest-orm)
 [![coveralls](https://img.shields.io/coveralls/dominikschreiber/express-rest-orm.svg?style=flat-square)](https://coveralls.io/r/dominikschreiber/express-rest-orm)
-![npm-version](https://img.shields.io/npm/v/express-rest-orm.svg?style=flat-square)
-![npm-downloads](https://img.shields.io/npm/dm/express-rest-orm.svg?style=flat-square)
-![npm-license](https://img.shields.io/npm/l/express-rest-orm.svg?style=flat-square)
+[![npm-version](https://img.shields.io/npm/v/express-rest-orm.svg?style=flat-square)](https://npmjs.com/package/express-rest-orm)
+[![npm-downloads](https://img.shields.io/npm/dm/express-rest-orm.svg?style=flat-square)](https://npmjs.com/package/express-rest-orm)
+[![npm-license](https://img.shields.io/npm/l/express-rest-orm.svg?style=flat-square)](https://github.com/dominikschreiber/express-rest-orm/blob/master/LICENSE)
 [![twitter](https://img.shields.io/badge/%40-domischreib-55acee.svg?style=flat-square)](https://twitter.com/@domischreib)
 
 *express-rest-orm* generates an [express](http://expressjs.com) Router
