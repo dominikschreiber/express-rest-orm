@@ -133,6 +133,21 @@ describe('', function() {
         });
     });
 
+    describe('   GET /:resource.:ext', function() {
+        it('should return an error for unknown extensions', function(done) {
+            request
+                .get('/users.unknown')
+                .set('Accept', 'application/json')
+                .expect(400)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.ok('url' in result.body);
+                    assert.deepEqual(_.omit(result.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
+                    done();
+                });
+        });
+    });
+
     describe('   GET /:resource?include_docs=true', function() {
         it('should list all resources as documents rather than urls', function(done) {
             request
@@ -273,6 +288,21 @@ describe('', function() {
                             });
                     });
             });
+        });
+    });
+
+    describe('   GET /:resource/:id.:ext', function() {
+        it('should return an error for unknown extensions', function(done) {
+            request
+                .get('/users/1.unknown')
+                .set('Accept', 'application/json')
+                .expect(400)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.ok('url' in result.body);
+                    assert.deepEqual(_.omit(result.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
+                    done();
+                });
         });
     });
 
