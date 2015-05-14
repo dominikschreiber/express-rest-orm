@@ -7,7 +7,7 @@
 [![twitter](https://img.shields.io/badge/%40-domischreib-55acee.svg?style=flat-square)](https://twitter.com/@domischreib)
 
 *express-rest-orm* generates an [express](http://expressjs.com) Router
-that serves a list of [sequelize](http://sequelize.com) Models via a
+that serves a list of [sequelize](http://sequelizejs.com) Models via a
 full-featured REST api.
 
 ## getting started
