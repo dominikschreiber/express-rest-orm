@@ -53,7 +53,7 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
 
 
 - [ ] _`/`:_ all resources
-  - [x] _`OPTIONS /`:_ list methods
+  - [ ] _`OPTIONS /`:_ list methods
   - [x] _`GET /`:_ list resource urls
   - [x] _`POST /`:_ create resource
   - [ ] _`PUT /`:_ bulk update resources
