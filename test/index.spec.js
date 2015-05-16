@@ -492,4 +492,19 @@ describe('', function() {
             });
         });
     });
+
+    describe('     * /*?suppress_response_codes=true', function() {
+        it('should set status=200 and serve the original status in res.body', function(done) {
+            request
+                .post('/users/1?suppress_response_codes=true')
+                .set('Accept', 'application/json')
+                .send({ givenname: 'Rick', lastname: 'Astley' })
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.equal(res.body.status, 400);
+                    done();
+                });
+        });
+    });
 });
