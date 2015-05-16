@@ -85,7 +85,7 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
   - [x] _`?fields=`:_ partial response (filtered by [`untyped.validate`](https://github.com/dominikschreiber/untyped))
   - [x] _`?limit=` and `?offset=`:_ pagination (`limit` entries per call, `offset` entries skipped)
   - [ ] _`?q=`:_ search resources for query
-  - [ ] _`?method=`:_ override http method with `method` (`GET /?method=POST` equals `POST /`)
+  - [x] _`?method=`:_ override http method with `method` (`GET /?method=POST` equals `POST /`)
   - [x] _`?suppress_response_codes=true`:_ override response code with `200`, put response code in result
 - [x] _`.:ext`:_ resource serialization
   - [x] _`.json`:_ (default) resources as json
