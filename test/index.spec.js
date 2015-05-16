@@ -42,6 +42,11 @@ function clean(data) {
     return _.omit(data, ['createdAt', 'updatedAt']);
 }
 
+function randomstring(len) {
+    if (!len) len = 12;
+    return Math.random().toString(36).substring(len);
+}
+
 describe('', function() {
     beforeEach(function(done) {
         orm.sync({force: true}).then(function() {
@@ -178,6 +183,25 @@ describe('', function() {
                     done();
                 });
         });
+
+        it('should default to ?offset=10 if not specified', function(done) {
+            Q.all(_.map(_.range(20), function() {
+                return User.create({
+                    givenname: randomstring(),
+                    lastname: randomstring()
+                });
+            })).then(function() {
+                request
+                    .get('/users')
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .end(function(err, result) {
+                        if (err) { done(err); }
+                        assert.equal(result.body.length, 10);
+                        done();
+                    });
+            });
+        });
     });
 
     describe('   GET /:resource?limit=:limit', function() {
@@ -189,6 +213,18 @@ describe('', function() {
                 .end(function(err, result) {
                     if (err) { done(err); }
                     assert.equal(result.body.length, 1);
+                    done();
+                });
+        });
+
+        it('should default to ?limit=0 if not specified', function(done) {
+            request
+                .get('/users')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, result) {
+                    if (err) { done(err); }
+                    assert.equal(result.body[0], '/users/' + users.dominik.id);
                     done();
                 });
         });
