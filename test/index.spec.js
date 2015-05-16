@@ -70,9 +70,9 @@ describe('', function() {
                 .get('/')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.deepEqual(result.body, _.map(models, function(model) {
+                    assert.deepEqual(res.body, _.map(models, function(model) {
                         return '/' + model.getTableName();
                     }));
                     done();
@@ -86,10 +86,10 @@ describe('', function() {
                 .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
                     User.count().then(function(len) {
-                        assert.deepEqual(result.body, _.map(_.range(1, len + 1), function(i) {
+                        assert.deepEqual(res.body, _.map(_.range(1, len + 1), function(i) {
                             return '/users/' + i;
                         }));
                         done();
@@ -144,10 +144,10 @@ describe('', function() {
                 .get('/users.unknown')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.ok('url' in result.body);
-                    assert.deepEqual(_.omit(result.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
+                    assert.ok('url' in res.body);
+                    assert.deepEqual(_.omit(res.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
                     done();
                 });
         });
@@ -159,10 +159,10 @@ describe('', function() {
                 .get('/users?include_docs=true')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
                     User.findAll().then(function(results) {
-                        assert.deepEqual(result.body, _.map(results, function(r) {
+                        assert.deepEqual(res.body, _.map(results, function(r) {
                             return clean(r.dataValues);
                         }));
                         done();
@@ -177,9 +177,9 @@ describe('', function() {
                 .get('/users?offset=1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.deepEqual(result.body, ['/users/' + users.hanna.id]);
+                    assert.deepEqual(res.body, ['/users/' + users.hanna.id]);
                     done();
                 });
         });
@@ -195,9 +195,9 @@ describe('', function() {
                     .get('/users')
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err, result) {
+                    .end(function(err, res) {
                         if (err) { done(err); }
-                        assert.equal(result.body.length, 10);
+                        assert.equal(res.body.length, 10);
                         done();
                     });
             });
@@ -210,9 +210,9 @@ describe('', function() {
                 .get('/users?limit=1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.equal(result.body.length, 1);
+                    assert.equal(res.body.length, 1);
                     done();
                 });
         });
@@ -222,10 +222,44 @@ describe('', function() {
                 .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.equal(result.body[0], '/users/' + users.dominik.id);
+                    assert.equal(res.body[0], '/users/' + users.dominik.id);
                     done();
+                });
+        });
+    });
+
+    describe('   GET /:resource?fields=:fields', function() {
+        it('should create a partial response containing only :fields properties', function(done) {
+            request
+                .get('/users?fields=givenname&include_docs=true')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, _.chain(users).values().map(function(user) { return _.pick(user, 'id', 'givenname'); }).value());
+                    done();
+                });
+        });
+
+        it('should be ignored if ?include_docs=true is not set', function(done) {
+            request
+                .get('/users')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(e1, expected) {
+                    if (e1) { done(e1); }
+
+                    request
+                        .get('/users?fields=givenname')
+                        .set('Accept', 'application/json')
+                        .expect(200)
+                        .end(function(e2, actual) {
+                            if (e2) { done(e2); }
+                            assert.deepEqual(actual.body, expected.body);
+                            done();
+                        });
                 });
         });
     });
@@ -238,9 +272,9 @@ describe('', function() {
                     .set('Accept', 'application/json')
                     .send({ givenname: 'Rick', lastname: 'Astley' })
                     .expect(200)
-                    .end(function(err, result) {
+                    .end(function(err, res) {
                         if (err) { done(err); }
-                        assert.equal(result.body, '/users/' + (len + 1));
+                        assert.equal(res.body, '/users/' + (len + 1));
                         done();
                     });
             });
@@ -305,10 +339,10 @@ describe('', function() {
                 .get('/users/1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    User.findOne(1).then(function(res) {
-                        assert.deepEqual(result.body, clean(res.dataValues));
+                    User.findOne(1).then(function(expected) {
+                        assert.deepEqual(res.body, clean(expected.dataValues));
                         done();
                     });
                 });
@@ -361,10 +395,10 @@ describe('', function() {
                 .get('/users/1.unknown')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.ok('url' in result.body);
-                    assert.deepEqual(_.omit(result.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
+                    assert.ok('url' in res.body);
+                    assert.deepEqual(_.omit(res.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
                     done();
                 });
         });
@@ -379,10 +413,10 @@ describe('', function() {
                 .set('Accept', 'application/json')
                 .send(rick)
                 .expect(400)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.ok(_.has(result.body, 'reason'));
-                    assert.ok(_.has(result.body, 'url'));
+                    assert.ok(_.has(res.body, 'reason'));
+                    assert.ok(_.has(res.body, 'url'));
                     done();
                 });
         });
@@ -397,11 +431,11 @@ describe('', function() {
                 .set('Accept', 'application/json')
                 .send(rick)
                 .expect(200)
-                .end(function(err, result) {
+                .end(function(err, res) {
                     if (err) { done(err); }
 
                     request
-                        .get(result.body)
+                        .get(res.body)
                         .set('Accept', 'application/json')
                         .expect(200)
                         .end(function(e, r) {
@@ -421,8 +455,8 @@ describe('', function() {
                 .expect(200)
                 .end(function(err) {
                     if (err) { done(err); }
-                    User.findOne(1).then(function(result) {
-                        assert.equal(result, null);
+                    User.findOne(1).then(function(res) {
+                        assert.equal(res, null);
                         done();
                     });
                 });
@@ -436,9 +470,9 @@ describe('', function() {
                     .get('/_errors/' + error.slug)
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err, result) {
+                    .end(function(err, res) {
                         if (err) { done(err); }
-                        assert.deepEqual(result.body, error.description);
+                        assert.deepEqual(res.body, error.description);
                         done();
                     });
             });
