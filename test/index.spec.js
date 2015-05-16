@@ -493,6 +493,42 @@ describe('', function() {
         });
     });
 
+    describe('   GET /*?method=:method', function() {
+        it('should perform HTTP :method instead of HTTP GET', function(done) {
+            var rick = {givenname: 'Rick', lastname: 'Astley'};
+
+            request
+                .put('/users/1')
+                .set('Accept', 'application/json')
+                .send(rick)
+                .expect(200)
+                .end(function(e1) {
+                    if (e1) { done(e1); }
+
+                    User.findOne(1).then(function(u1) {
+                        var expected = u1.dataValues;
+
+                        User.upsert(users.dominik).then(function() {
+                            request
+                                .get('/users/1?method=PUT')
+                                .set('Accept', 'application/json')
+                                .send(rick)
+                                .expect(200)
+                                .end(function(e2) {
+                                    if (e2) { done(e2); }
+
+                                    User.findOne(1).then(function(u2) {
+                                        var actual = u2.dataValues;
+                                        assert.deepEqual(actual, expected);
+                                        done();
+                                    });
+                                });
+                        });
+                    });
+                });
+        });
+    });
+
     describe('     * /*?suppress_response_codes=true', function() {
         it('should set status=200 and serve the original status in res.body', function(done) {
             request
