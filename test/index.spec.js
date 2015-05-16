@@ -404,6 +404,20 @@ describe('', function() {
         });
     });
 
+    describe('   GET /:resource/:id?fields=:fields', function() {
+        it('should return a partial response matching :fields', function(done) {
+            request
+                .get('/users/1?fields=givenname')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, _.pick(users.dominik, 'id', 'givenname'));
+                    done();
+                });
+        });
+    });
+
     describe('  POST /:resource/:id', function() {
         it('should return an error as this is not allowed', function(done) {
             var rick = { givenname: 'Rick', lastname: 'Astley' };
