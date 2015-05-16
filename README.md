@@ -56,7 +56,7 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
   - [ ] _`OPTIONS /`:_ list methods
   - [x] _`GET /`:_ list resource urls
   - [x] _`POST /`:_ create resource
-  - [ ] _`PUT /`:_ bulk update resources
+  - [x] _`PUT /`:_ bulk update resources
   - [x] _`DELETE /`:_ delete all resources
 - [x] _`/:id`:_ a single resource
   - [x] _`GET /:id`:_ read resource
@@ -86,7 +86,7 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
   - [x] _`?limit=` and `?offset=`:_ pagination (`limit` entries per call, `offset` entries skipped)
   - [ ] _`?q=`:_ search resources for query
   - [ ] _`?method=`:_ override http method with `method` (`GET /?method=POST` equals `POST /`)
-  - [ ] _`?suppress_response_codes=true`:_ override response code with `200`, put response code in result
+  - [x] _`?suppress_response_codes=true`:_ override response code with `200`, put response code in result
 - [x] _`.:ext`:_ resource serialization
   - [x] _`.json`:_ (default) resources as json
   - [x] _`.xml`:_ resources as xml
