@@ -230,6 +230,99 @@ describe('', function() {
         });
     });
 
+    describe('   GET /:resource?:field{=,~=,|=,^=,$=,*=}:filter', function() {
+        var expected = ['/users/' + users.dominik.id];
+
+        it('should filter exact matches when ?:field=:filter', function(done) {
+            request
+                .get('/users?givenname=' + users.dominik.givenname)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+
+        it('should filter oneof matches when ?:field~=:filter', function(done) {
+            request
+                .get('/users?givenname~=Peter,' + users.dominik.givenname)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+
+        it('should filter _prefix_/exact matches when ?:field|=:filter', function(done) {
+            User.create({
+                givenname: 'Dom-inik',
+                lastname: 'Schreiber'
+            }).then(function() {
+                request
+                    .get('/users?givenname|=' + users.dominik.givenname.substring(0, 3))
+                    .set('Accept', 'application/json')
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) { done(err); }
+                        assert.deepEqual(res.body, expected.concat(['/users/' + (_.keys(users).length + 1)]));
+                        done();
+                    });
+            });
+        });
+
+        it('should filter prefix/_exact_ matches when ?:field|=:filter', function(done) {
+            request
+                .get('/users?givenname|=' + users.dominik.givenname)
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+
+        it('should filter prefix matches when ?:field^=:filter', function(done) {
+            request
+                .get('/users?givenname^=' + users.dominik.givenname.substring(0, 3))
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+
+        it('should filter suffix matches when ?:field$=:filter', function(done) {
+            request
+                .get('/users?givenname$=' + users.dominik.givenname.slice(-3))
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+
+        it('should filter contains matches when ?:field*=:filter', function(done) {
+            request
+                .get('/users?givenname*=' + users.dominik.givenname.substring(2,4))
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, expected);
+                    done();
+                });
+        });
+    });
+
     describe('   GET /:resource?fields=:fields', function() {
         it('should create a partial response containing only :fields properties', function(done) {
             request
