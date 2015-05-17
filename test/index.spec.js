@@ -455,6 +455,22 @@ describe('', function() {
                     });
                 });
         });
+
+        it('should replace foreign keys with resource urls', function(done) {
+            request
+                .get('/couples/1')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, {
+                        id: 1,
+                        one: '/users/' + users.dominik.id,
+                        another: '/users/' + users.hanna.id
+                    });
+                    done();
+                });
+        });
     });
 
     _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
@@ -507,6 +523,24 @@ describe('', function() {
                     if (err) { done(err); }
                     assert.ok('url' in res.body);
                     assert.deepEqual(_.omit(res.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
+                    done();
+                });
+        });
+    });
+
+    describe('   GET /:resource/:id?include_docs=true', function() {
+        it('should expand foreign keys to resources', function(done) {
+            request
+                .get('/couples/1?include_docs=true')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.body, {
+                        id: 1,
+                        one: users.dominik,
+                        another: users.hanna
+                    });
                     done();
                 });
         });
@@ -605,7 +639,7 @@ describe('', function() {
                 .expect(302)
                 .end(function(err, res) {
                     if (err) { done(err); }
-                    assert.deepEqual(res.headers.location, 'users/' + users.dominik.id);
+                    assert.deepEqual(res.headers.location, '/users/' + users.dominik.id);
                     done();
                 });
         });
