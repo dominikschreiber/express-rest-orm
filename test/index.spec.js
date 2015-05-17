@@ -29,7 +29,17 @@ var expressRestOrm = require('../lib/index')
               type: Sequelize.STRING
         }
     })
-  , models = [User]
+  , Couple = orm.define('couple', {
+        one: {
+            type: Sequelize.INTEGER,
+            referencesKey: 'users.id'
+        },
+        another: {
+            type: Sequelize.INTEGER,
+            referencesKey: 'users.id'
+        }
+    })
+  , models = [User, Couple]
   , users = {
         dominik: {id: 1, givenname: 'Dominik', lastname: 'Schreiber'},
         hanna: {id: 2, givenname: 'Hanna', lastname: 'Schreiber'}
@@ -53,13 +63,18 @@ describe('', function() {
             Q.all(_.map(_.values(users), function(user) {
                 return User.create(_.omit(user, ['id']));
             })).then(function() {
-                app = express();
-                app.use(bodyparser.json());
-                app.use('/', expressRestOrm(models));
+                Couple.create({
+                    one: 1,
+                    another: 2
+                }).then(function() {
+                    app = express();
+                    app.use(bodyparser.json());
+                    app.use('/', expressRestOrm(models));
 
-                request = supertest(app);
-                
-                done();
+                    request = supertest(app);
+                    
+                    done();
+                });
             });
         });
     });
@@ -566,6 +581,44 @@ describe('', function() {
                         assert.equal(res, null);
                         done();
                     });
+                });
+        });
+    });
+
+    describe('   GET /:resource/:id/:field', function() {
+        it('should deliver the field only if :field is no foreign key', function(done) {
+            request
+                .get('/users/1/givenname')
+                .set('Accept', 'application/json')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.equal(res.body, users.dominik.givenname);
+                    done();
+                });
+        });
+
+        it('should redirect to the nested field if :field is a foreign key', function(done) {
+            request
+                .get('/couples/1/one')
+                .set('Accept', 'application/json')
+                .expect(302)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(res.headers.location, 'users/' + users.dominik.id);
+                    done();
+                });
+        });
+
+        it('should respond with 400 Bad Request if :field is unknown', function(done) {
+            request
+                .get('/users/1/foo')
+                .set('Accept', 'application/json')
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(_.omit(res.body, 'url'), expressRestOrmErrors.UNKNOWN_FIELD.error);
+                    done();
                 });
         });
     });
