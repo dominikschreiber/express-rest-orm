@@ -74,14 +74,14 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
   - [ ] _`PUT /:id/:field/:id`:_ update nested resource
   - [ ] _`DELETE /:id/:field/:id`:_ delete nested resource
 - [ ] _`?`:_ query parameters
-  - [x] _`?include_docs`:_ when `GET /?include_docs`, list docs instead of urls
-  - [ ] _`?field=filter`:_ list `resource`s that match `filter` on `field`. Support
-    - [ ] _`=`:_ exact match
-    - [ ] _`~=`:_ one of
-    - [ ] _`|=`:_ exact match or starts with + `-` (namespacing)
-    - [ ] _`^=`:_ starts with
-    - [ ] _`$=`:_ ends with
-    - [ ] _`*=`:_ contains
+  - [x] _`?include_docs=true`:_ when `GET /?include_docs`, list docs instead of urls
+  - [x] _`?:field=`:_ list `resource`s that match `filter` on `field`. Support
+    - [x] _`=`:_ exact match
+    - [x] _`~=`:_ one of
+    - [x] _`|=`:_ exact match or starts with + `-` (namespacing)
+    - [x] _`^=`:_ starts with
+    - [x] _`$=`:_ ends with
+    - [x] _`*=`:_ contains
   - [x] _`?fields=`:_ partial response (filtered by [`untyped.validate`](https://github.com/dominikschreiber/untyped))
   - [x] _`?limit=` and `?offset=`:_ pagination (`limit` entries per call, `offset` entries skipped)
   - [ ] _`?q=`:_ search resources for query
