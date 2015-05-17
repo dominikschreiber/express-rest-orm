@@ -3,7 +3,7 @@
     "plusplus": true,
     "quotmark": "single",
     "undef": true,
-    "unused": "strict",
+    "unused": true,
     "strict": true,
     
     "maxdepth": 2,
