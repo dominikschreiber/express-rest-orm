@@ -63,16 +63,8 @@ from [express-persistent-resource](https://github.com/dominikschreiber/express-p
   - [x] _`POST /:id`:_ error -> use `PUT /:id` or `POST /`
   - [x] _`PUT /:id`:_ update resource
   - [x] _`DELETE /:id`:_ delete resource
-- [ ] _`/:id/:field`:_ all nested resources
-  - [ ] _`GET /:id/:field`:_ list nested resources (simulate with `GET /:id?fields=:field`)
-  - [ ] _`POST /:id/:field`:_ create nested resource (added to `:field` list)
-  - [ ] _`PUT /:id/:field`:_ bulk update nested resources
-  - [ ] _`DELETE /:id/:field`:_ delete all nested resources
-- [ ] _`/:id/:field/:id`:_ a single nested resource
-  - [ ] _`GET /:id/:field/:id`:_ read nested resource (simulate with `GET /:id/:field`, then `GET` field url)
-  - [ ] _`POST /:id/:field/:id`:_ error -> use `PUT /:id/:field/:id` or `POST /:id/:field`
-  - [ ] _`PUT /:id/:field/:id`:_ update nested resource
-  - [ ] _`DELETE /:id/:field/:id`:_ delete nested resource
+- [x] _`/:id/:field`:_ all nested resources
+  - [x] _`GET /:id/:field`:_ list nested resources (simulate with `GET /:id?fields=:field`)
 - [ ] _`?`:_ query parameters
   - [x] _`?include_docs=true`:_ when `GET /?include_docs`, list docs instead of urls
   - [x] _`?:field=`:_ list `resource`s that match `filter` on `field`. Support

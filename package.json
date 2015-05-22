@@ -1,6 +1,6 @@
 {
   "name": "express-rest-orm",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "rest interface generation for sequelize models",
   "main": "lib/index.js",
   "scripts": {
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/dominikschreiber/express-rest-orm",
   "dependencies": {
+    "async": "^1.0.0",
     "easyxml": "^1.0.0",
     "express": "^4.12.3",
     "lodash": "^3.8.0",
