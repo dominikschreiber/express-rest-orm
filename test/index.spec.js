@@ -3,6 +3,7 @@
 var expressRestOrm = require('../lib/index')
   , expressRestOrmErrors = require('../lib/errors')
   , Q = require('q')
+  , async = require('async')
   , supertest = require('supertest')
   , assert = require('assert')
   , express = require('express')
@@ -652,6 +653,90 @@ describe('', function() {
                 .end(function(err, res) {
                     if (err) { done(err); }
                     assert.deepEqual(_.omit(res.body, 'url'), expressRestOrmErrors.UNKNOWN_FIELD.error);
+                    done();
+                });
+        });
+    });
+
+    _.each(_.pairs({
+        json: 'application/json',
+        xml: 'application/xml',
+        yml: 'text/x-yaml'
+    }), function(extandformat) {
+        describe('   GET /:resource/:id/:field.' + extandformat[0], function() {
+            it('should be equivalent to `GET /:resource/:id/:field` with `Accept: ' + extandformat[1] + '`', function(done) {
+                async.parallel([
+                    function(cb) {
+                        request
+                            .get('/users/1/givenname.' + extandformat[0])
+                            .set('Accept', extandformat[1])
+                            .expect(200)
+                            .end(function(e1, actual) {
+                                if (e1) { done(e1); }
+
+                                request
+                                    .get('/users/1/givenname')
+                                    .set('Accept', extandformat[1])
+                                    .expect(200)
+                                    .end(function(e2, expected) {
+                                        if (e2) { done(e2); }
+                                        assert.deepEqual(actual.text, expected.text);
+                                        cb();
+                                    });
+                            });
+                    },
+                    function(cb) {
+                        request
+                            .get('/couples/1/one.' + extandformat[0])
+                            .set('Accept', extandformat[1])
+                            .expect(302)
+                            .end(function(e1, actual) {
+                                if (e1) { done(e1); }
+
+                                request
+                                    .get('/couples/1/one')
+                                    .set('Accept', extandformat[1])
+                                    .expect(302)
+                                    .end(function(e2, expected) {
+                                        if (e2) { done(e2); }
+                                        assert.equal(actual.headers.location, expected.headers.location);
+                                        cb();
+                                    });
+                            });
+                    },
+                    function(cb) {
+                        request
+                            .get('/users/1/unknown.' + extandformat[0])
+                            .set('Accept', extandformat[1])
+                            .expect(400)
+                            .end(function(e1, actual) {
+                                if (e1) { done(e1); }
+
+                                request
+                                    .get('/users/1/unknown')
+                                    .set('Accept', extandformat[1])
+                                    .expect(400)
+                                    .end(function(e2, expected) {
+                                        if (e2) { done(e2); }
+                                        assert.deepEqual(actual.body, expected.body);
+                                        cb();
+                                    });
+                            });
+                    }
+                ], done);
+            });
+        });
+    });
+
+    describe('   GET /:resource/:id/:field.:ext', function() {
+        it('should return an error for unknown extensions', function(done) {
+            request
+                .get('/users/1/givenname.unknown')
+                .set('Accept', 'application/json')
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) { done(err); }
+                    assert.deepEqual(_.omit(res.body, 'url'), expressRestOrmErrors.UNKNOWN_TYPE.error);
                     done();
                 });
         });
