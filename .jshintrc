@@ -1,4 +1,5 @@
 {
+    "esnext": true,
     "latedef": true,
     "plusplus": true,
     "quotmark": "single",
