@@ -29,7 +29,6 @@
     "easyxml": "^1.0.0",
     "express": "^4.12.3",
     "lodash": "^3.8.0",
-    "promise": "^7.0.1",
     "q": "^1.4.0",
     "sequelize": "^2.1.0",
     "sqlite3": "^3.0.7",
@@ -49,21 +48,6 @@
     "istanbul": "^0.3.14",
     "load-grunt-tasks": "^3.2.0",
     "mocha": "^2.2.4",
-    "mocha-lcov-reporter": "0.0.2",
-    "mocha-multi": "^0.7.1",
-    "supertest": "^0.15.0",
-    "travis-cov": "^0.2.5"
-  },
-  "config": {
-    "blanket": {
-      "pattern": "lib",
-      "data-cover-never": [
-        "node_modules",
-        "test"
-      ]
-    },
-    "travis-cov": {
-      "threshold": 100
-    }
+    "supertest": "^0.15.0"
   }
 }
