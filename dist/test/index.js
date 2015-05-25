@@ -66,11 +66,19 @@ var User = orm.define('user', {
 var Couple = orm.define('couple', {
     one: {
         type: Sequelize.INTEGER,
-        referencesKey: 'users.id'
+        references: {
+            model: User,
+            key: 'id'
+        },
+        onDelete: 'CASCADE'
     },
     another: {
         type: Sequelize.INTEGER,
-        referencesKey: 'users.id'
+        references: {
+            model: User,
+            key: 'id'
+        },
+        onDelete: 'CASCADE'
     }
 });
 

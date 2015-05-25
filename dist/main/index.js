@@ -155,11 +155,14 @@ exports['default'] = function (models) {
         var resource = '' + collection + '/:id';
         var field = '' + resource + '/:field';
         var foreignkeys = _.pairs(model.attributes).filter(function (attributeOptions) {
-            return 'referencesKey' in attributeOptions[1];
+            return 'references' in attributeOptions[1];
         }).map(function (attributeOptions) {
             return {
                 attribute: attributeOptions[0],
-                foreignkey: attributeOptions[1].referencesKey
+                references: attributeOptions[1].references,
+                model: _.find(models, function (m) {
+                    return m.getTableName() === attributeOptions[1].references.model;
+                })
             };
         });
         var xml = xmlbuilder(model.getTableName());
@@ -261,16 +264,11 @@ exports['default'] = function (models) {
                 model.findById(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(function (result) {
                     // ?include_docs=true
                     if (shouldIncludeDocs) {
-                        Q.all(foreignkeys.map(function (foreignkey) {
-                            var foreigntable = foreignkey.foreignkey.split('.')[0];
-                            // can not use sequelize.model(...) as the model name
-                            // may not be derived from foreignkey.foreignkey
-                            // (e.g. foreignkey could be 'users.id', but model name is 'user')
-                            var foreignmodel = _.find(models, function (m) {
-                                return m.getTableName() === foreigntable;
-                            });
+                        Q.all(foreignkeys.map(function (fk) {
+                            var options = { where: {} };
+                            options.where[fk.references.key] = result.dataValues[fk.attribute];
 
-                            return foreignmodel.findById(result.dataValues[foreignkey.attribute]);
+                            return fk.model.findOne(options);
                         })).then(function (foreignvalues) {
                             _.zip(foreignkeys, foreignvalues).forEach(function (keyValue) {
                                 result.dataValues[keyValue[0].attribute] = cleanitem(keyValue[1]);
@@ -280,8 +278,8 @@ exports['default'] = function (models) {
                     }
                     // urls for foreign keys
                     else {
-                        foreignkeys.forEach(function (foreignkey) {
-                            return result.dataValues[foreignkey.attribute] = req.baseUrl + '/' + foreignkey.foreignkey.split('.')[0] + '/' + result.dataValues[foreignkey.attribute];
+                        foreignkeys.forEach(function (fk) {
+                            return result.dataValues[fk.attribute] = '' + req.baseUrl + '/' + fk.references.model + '/' + result.dataValues[fk.attribute];
                         });
                         resolve(cleanitem(result));
                     }
@@ -340,7 +338,11 @@ exports['default'] = function (models) {
         });
 
         api['delete'](collection, function (req, res, next) {
-            model.destroy({ where: { id: { gt: 0 } } }).then(function () {
+            model.destroy({
+                where: { id: { gt: 0 } },
+                truncate: true,
+                cascade: true
+            }).then(function () {
                 res.sendStatus(200);
                 next();
             });
@@ -390,7 +392,11 @@ exports['default'] = function (models) {
         });
 
         api['delete'](resource, function (req, res, next) {
-            model.destroy({ where: { id: req.params.id } }).then(function () {
+            model.destroy({
+                where: { id: req.params.id },
+                truncate: true,
+                cascade: true
+            }).then(function () {
                 res.format(format(xml, res, req.baseUrl + collection));
                 next();
             });
@@ -407,7 +413,7 @@ exports['default'] = function (models) {
             } else {
                 if (req.params.field in model.attributes) {
                     getresource(req).then(function (resource) {
-                        if ('referencesKey' in model.attributes[req.params.field]) {
+                        if ('references' in model.attributes[req.params.field]) {
                             res.redirect(resource[req.params.field]);
                         } else {
                             res.format(format(xml, res, resource[req.params.field]));
@@ -429,7 +435,7 @@ exports['default'] = function (models) {
                     var field = req.params.field.replace(/\.[^\.]+$/g, '');
                     if (field in model.attributes) {
                         getresource(req).then(function (resource) {
-                            if ('referencesKey' in model.attributes[field]) {
+                            if ('references' in model.attributes[field]) {
                                 res.redirect(resource[field]);
                             } else {
                                 format(xml, res, resource[field])[extensionmappings[req.params.ext]]();

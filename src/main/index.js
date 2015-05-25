@@ -132,10 +132,11 @@ export default function(models) {
         const resource = `${collection}/:id`;
         const field = `${resource}/:field`;
         const foreignkeys = _.pairs(model.attributes)
-                            .filter(attributeOptions => 'referencesKey' in attributeOptions[1])
+                            .filter(attributeOptions => 'references' in attributeOptions[1])
                             .map(attributeOptions => { return {
                                 attribute: attributeOptions[0],
-                                foreignkey: attributeOptions[1].referencesKey
+                                references: attributeOptions[1].references,
+                                model: _.find(models, m => m.getTableName() === attributeOptions[1].references.model)
                             }; });
         const xml = xmlbuilder(model.getTableName());
 
@@ -226,14 +227,11 @@ export default function(models) {
                 model.findById(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(result => {
                     // ?include_docs=true
                     if (shouldIncludeDocs) {
-                        Q.all(foreignkeys.map(foreignkey => {
-                            const foreigntable = foreignkey.foreignkey.split('.')[0];
-                            // can not use sequelize.model(...) as the model name
-                            // may not be derived from foreignkey.foreignkey
-                            // (e.g. foreignkey could be 'users.id', but model name is 'user')
-                            const foreignmodel = _.find(models, m => m.getTableName() === foreigntable);
+                        Q.all(foreignkeys.map(fk => {
+                            let options = {where: {}};
+                            options.where[fk.references.key] = result.dataValues[fk.attribute];
 
-                            return foreignmodel.findById(result.dataValues[foreignkey.attribute]);
+                            return fk.model.findOne(options);
                         })).then(foreignvalues => {
                             _.zip(foreignkeys, foreignvalues).forEach(keyValue => {
                                 result.dataValues[keyValue[0].attribute] = cleanitem(keyValue[1]);
@@ -243,9 +241,7 @@ export default function(models) {
                     }
                     // urls for foreign keys
                     else {
-                        foreignkeys.forEach(foreignkey => 
-                            result.dataValues[foreignkey.attribute] = req.baseUrl + '/' + foreignkey.foreignkey.split('.')[0] + '/' + result.dataValues[foreignkey.attribute]
-                        );
+                        foreignkeys.forEach(fk => result.dataValues[fk.attribute] = `${req.baseUrl}/${fk.references.model}/${result.dataValues[fk.attribute]}`);
                         resolve(cleanitem(result));
                     }
                 }, reject);
@@ -305,7 +301,11 @@ export default function(models) {
         });
 
         api.delete(collection, (req, res, next) => {
-            model.destroy({where: {id: {gt: 0}}}).then(() => {
+            model.destroy({
+                where: {id: {gt: 0}},
+                truncate: true,
+                cascade: true
+            }).then(() => {
                 res.sendStatus(200);
                 next();
             });
@@ -355,7 +355,11 @@ export default function(models) {
         });
 
         api.delete(resource, (req, res, next) => {
-            model.destroy({where: {id: req.params.id}}).then(() => {
+            model.destroy({
+                where: {id: req.params.id},
+                truncate: true,
+                cascade: true
+            }).then(() => {
                 res.format(format(xml, res, req.baseUrl + collection));
                 next();
             });
@@ -372,7 +376,7 @@ export default function(models) {
             } else {
                 if (req.params.field in model.attributes) {
                     getresource(req).then(resource => {
-                        if ('referencesKey' in model.attributes[req.params.field]) {
+                        if ('references' in model.attributes[req.params.field]) {
                             res.redirect(resource[req.params.field]);
                         } else {
                             res.format(format(xml, res, resource[req.params.field]));
@@ -393,7 +397,7 @@ export default function(models) {
                 let field = req.params.field.replace(/\.[^\.]+$/g, '');
                 if (field in model.attributes) {
                     getresource(req).then(resource => {
-                        if ('referencesKey' in model.attributes[field]) {
+                        if ('references' in model.attributes[field]) {
                             res.redirect(resource[field]);
                         } else {
                             format(xml, res, resource[field])[extensionmappings[req.params.ext]]();
