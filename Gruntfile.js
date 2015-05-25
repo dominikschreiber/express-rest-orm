@@ -1,7 +1,16 @@
 'use strict';
 
 module.exports = function(grunt) {
-    require('load-grunt-tasks')(grunt);
+    [
+        'grunt-contrib-clean',
+        'grunt-contrib-jshint',
+        'grunt-babel',
+        'grunt-mocha-istanbul',
+    ].forEach(function(task) {
+        grunt.loadNpmTasks(task);
+    });
+
+    // ######### task configuration ###########################################
 
     grunt.initConfig({
         // ===== clean ========================================================
@@ -65,12 +74,16 @@ module.exports = function(grunt) {
         }
     });
 
+    // ######### events #######################################################
+
     grunt.event.on('coverage', function(lcovFileContents, done) {
         require('coveralls').handleInput(lcovFileContents, function(err) {
             if (err) { return done(err); }
             done();
         });
     });
+
+    // ######### tasks/lifecycle ##############################################
 
     grunt.registerTask('validate', ['clean', 'jshint']);
 
@@ -83,5 +96,5 @@ module.exports = function(grunt) {
     grunt.registerTask('default', ['install']);
 
     // for travis build
-    grunt.registerTask('travis', ['mocha_istanbul:coveralls']);
+    grunt.registerTask('travis', ['compile', 'mocha_istanbul:coveralls']);
 };
