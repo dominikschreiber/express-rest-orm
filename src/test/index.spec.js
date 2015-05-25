@@ -1,78 +1,75 @@
 'use strict';
 
-var expressRestOrm = require('../lib/index')
-  , expressRestOrmErrors = require('../lib/errors')
-  , Q = require('q')
-  , async = require('async')
-  , supertest = require('supertest')
-  , assert = require('assert')
-  , express = require('express')
-  , bodyparser = require('body-parser')
-  , Sequelize = require('sequelize')
-  , _ = require('lodash')
+import * as Q from 'q';
+import * as async from 'async';
+import * as supertest from 'supertest';
+import * as assert from 'assert';
+import * as express from 'express';
+import * as bodyparser from 'body-parser';
+import * as Sequelize from 'sequelize';
+import * as _ from 'lodash';
 
-  , orm = new Sequelize('example', 'root', '', {
-        host: 'localhost',
-        dialect: 'sqlite',
-        pool: {
-            max: 5,
-            min: 0,
-            idle: 10000
-        },
-        logging: false,
-        storage: __dirname + '/db.sqlite'
-    })
-  , User = orm.define('user', {
-        givenname: {
-            type: Sequelize.STRING
-        },
-        lastname: {
-              type: Sequelize.STRING
-        }
-    })
-  , Couple = orm.define('couple', {
-        one: {
-            type: Sequelize.INTEGER,
-            referencesKey: 'users.id'
-        },
-        another: {
-            type: Sequelize.INTEGER,
-            referencesKey: 'users.id'
-        }
-    })
-  , models = [User, Couple]
-  , users = {
-        dominik: {id: 1, givenname: 'Dominik', lastname: 'Schreiber'},
-        hanna: {id: 2, givenname: 'Hanna', lastname: 'Schreiber'}
+import * as expressRestOrm from '../main/index';
+import * as expressRestOrmErrors from '../main/errors';
+
+const orm = new Sequelize.default('example', 'root', '', {
+    host: 'localhost',
+    dialect: 'sqlite',
+    pool: {
+        max: 5,
+        min: 0,
+        idle: 10000
+    },
+    logging: false,
+    storage: __dirname + '/db.sqlite'
+});
+
+const User = orm.define('user', {
+    givenname: {
+        type: Sequelize.STRING
+    },
+    lastname: {
+          type: Sequelize.STRING
     }
+});
 
-  , app = false
-  , request = false;
+const Couple = orm.define('couple', {
+    one: {
+        type: Sequelize.INTEGER,
+        referencesKey: 'users.id'
+    },
+    another: {
+        type: Sequelize.INTEGER,
+        referencesKey: 'users.id'
+    }
+});
 
-function clean(data) {
-    return _.omit(data, ['createdAt', 'updatedAt']);
-}
+const models = [User, Couple];
 
-function randomstring(len) {
-    if (!len) len = 12;
-    return Math.random().toString(36).substring(len);
-}
+const users = {
+    dominik: {id: 1, givenname: 'Dominik', lastname: 'Schreiber'},
+    hanna: {id: 2, givenname: 'Hanna', lastname: 'Schreiber'}
+};
 
-describe('', function() {
-    beforeEach(function(done) {
-        orm.sync({force: true}).then(function() {
-            Q.all(_.map(_.values(users), function(user) {
-                return User.create(_.omit(user, ['id']));
-            })).then(function() {
+let app = false;
+let request = false;
+
+let clean = data => _.omit(data, ['createdAt', 'updatedAt']);
+let randomstring = len => Math.random().toString(36).substring((!len) ? 12 : len);
+
+describe('', () => {
+    beforeEach(done => {
+        orm.sync({force: true}).then(() => {
+            Q.all(_.values(users).map(user => User.create(_.omit(user, ['id'])))).then(() => {
                 Couple.create({
                     one: 1,
                     another: 2
-                }).then(function() {
-                    app = express();
+                }).then(() => {
+                    app = new express.default();
                     app.use(bodyparser.json());
-                    app.use('/', expressRestOrm(models));
+                    app.use('/', new expressRestOrm.default(models));
 
-                    request = supertest(app);
+                    request = new supertest.default(app);
                     
                     done();
                 });
@@ -80,15 +77,15 @@ describe('', function() {
         });
     });
 
-    describe('   GET /', function() {
-        it('should list all resource endpoints relative to /', function(done) {
+    describe('   GET /', () => {
+        it('should list all resource endpoints relative to /', done => {
             request
                 .get('/')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
-                    assert.deepEqual(res.body, _.map(models, function(model) {
+                    assert.deepEqual(res.body, models.map(model => {
                         return '/' + model.getTableName();
                     }));
                     done();
@@ -96,16 +93,16 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource', function() {
-        it('should list all resource urls relative to /', function(done) {
+    describe('   GET /:resource', () => {
+        it('should list all resource urls relative to /', done => {
             request
                 .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
-                    User.count().then(function(len) {
-                        assert.deepEqual(res.body, _.map(_.range(1, len + 1), function(i) {
+                    User.count().then(len => {
+                        assert.deepEqual(res.body, _.range(1, len + 1).map(i => {
                             return '/users/' + i;
                         }));
                         done();
@@ -114,9 +111,9 @@ describe('', function() {
         });
     });
 
-    _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
-        describe('   GET /:resource -H "Accept: ' + mime + '"', function() {
-            it('should deliver /:resource as ' + mime, function(done) {
+    _.each(['application/json', 'application/xml', 'text/x-yaml'], mime => {
+        describe(`   GET /:resource -H "Accept: ${mime}"`, () => {
+            it('should deliver /:resource as ' + mime, done => {
                 request
                     .get('/users')
                     .set('Accept', mime)
@@ -131,20 +128,20 @@ describe('', function() {
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function(endingandmime) {
-        describe('   GET /:resource.' + endingandmime[0], function() {
-            it('should be equivalent to `GET /:resource` with `Accept: ' + endingandmime[1] + '`', function(done) {
+    }), endingandmime => {
+        describe('   GET /:resource.' + endingandmime[0], () => {
+            it(`should be equivalent to 'GET /:resource' with 'Accept: ${endingandmime[1]}'`, done => {
                 request
                     .get('/users.' + endingandmime[0])
                     .expect(200)
-                    .end(function(err, actual) {
+                    .end((err, actual) => {
                         if (err) { done(err); }
 
                         request
                             .get('/users')
                             .set('Accept', endingandmime[1])
                             .expect(200)
-                            .end(function(e, expected) {
+                            .end((e, expected) => {
                                 if (e) { done(e); }
                                 assert.deepEqual(actual.text, expected.text);
                                 done();
@@ -154,13 +151,13 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource.:ext', function() {
-        it('should return an error for unknown extensions', function(done) {
+    describe('   GET /:resource.:ext', () => {
+        it('should return an error for unknown extensions', done => {
             request
                 .get('/users.unknown')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.ok('url' in res.body);
                     assert.deepEqual(_.omit(res.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
@@ -169,16 +166,16 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource?include_docs=true', function() {
-        it('should list all resources as documents rather than urls', function(done) {
+    describe('   GET /:resource?include_docs=true', () => {
+        it('should list all resources as documents rather than urls', done => {
             request
                 .get('/users?include_docs=true')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
-                    User.findAll().then(function(results) {
-                        assert.deepEqual(res.body, _.map(results, function(r) {
+                    User.findAll().then(results => {
+                        assert.deepEqual(res.body, results.map(r => {
                             return clean(r.dataValues);
                         }));
                         done();
@@ -187,31 +184,31 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource?offset=:offset', function() {
-        it('should start listing resources after :offset entries', function(done) {
+    describe('   GET /:resource?offset=:offset', () => {
+        it('should start listing resources after :offset entries', done => {
             request
                 .get('/users?offset=1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, ['/users/' + users.hanna.id]);
                     done();
                 });
         });
 
-        it('should default to ?offset=10 if not specified', function(done) {
-            Q.all(_.map(_.range(20), function() {
+        it('should default to ?offset=10 if not specified', done => {
+            Q.all(_.range(20).map(() => {
                 return User.create({
                     givenname: randomstring(),
                     lastname: randomstring()
                 });
-            })).then(function() {
+            })).then(() => {
                 request
                     .get('/users')
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err, res) {
+                    .end((err, res) => {
                         if (err) { done(err); }
                         assert.equal(res.body.length, 10);
                         done();
@@ -220,25 +217,25 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource?limit=:limit', function() {
-        it('should return up to :limit urls', function(done) {
+    describe('   GET /:resource?limit=:limit', () => {
+        it('should return up to :limit urls', done => {
             request
                 .get('/users?limit=1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.equal(res.body.length, 1);
                     done();
                 });
         });
 
-        it('should default to ?limit=0 if not specified', function(done) {
+        it('should default to ?limit=0 if not specified', done => {
             request
                 .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.equal(res.body[0], '/users/' + users.dominik.id);
                     done();
@@ -246,43 +243,43 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource?:field{=,~=,|=,^=,$=,*=}:filter', function() {
+    describe('   GET /:resource?:field{=,~=,|=,^=,$=,*=}:filter', () => {
         var expected = ['/users/' + users.dominik.id];
 
-        it('should filter exact matches when ?:field=:filter', function(done) {
+        it('should filter exact matches when ?:field=:filter', done => {
             request
                 .get('/users?givenname=' + users.dominik.givenname)
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
                 });
         });
 
-        it('should filter oneof matches when ?:field~=:filter', function(done) {
+        it('should filter oneof matches when ?:field~=:filter', done => {
             request
                 .get('/users?givenname~=Peter,' + users.dominik.givenname)
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
                 });
         });
 
-        it('should filter _prefix_/exact matches when ?:field|=:filter', function(done) {
+        it('should filter _prefix_/exact matches when ?:field|=:filter', done => {
             User.create({
                 givenname: 'Dom-inik',
                 lastname: 'Schreiber'
-            }).then(function() {
+            }).then(() => {
                 request
                     .get('/users?givenname|=' + users.dominik.givenname.substring(0, 3))
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err, res) {
+                    .end((err, res) => {
                         if (err) { done(err); }
                         assert.deepEqual(res.body, expected.concat(['/users/' + (_.keys(users).length + 1)]));
                         done();
@@ -290,48 +287,48 @@ describe('', function() {
             });
         });
 
-        it('should filter prefix/_exact_ matches when ?:field|=:filter', function(done) {
+        it('should filter prefix/_exact_ matches when ?:field|=:filter', done => {
             request
                 .get('/users?givenname|=' + users.dominik.givenname)
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
                 });
         });
 
-        it('should filter prefix matches when ?:field^=:filter', function(done) {
+        it('should filter prefix matches when ?:field^=:filter', done => {
             request
                 .get('/users?givenname^=' + users.dominik.givenname.substring(0, 3))
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
                 });
         });
 
-        it('should filter suffix matches when ?:field$=:filter', function(done) {
+        it('should filter suffix matches when ?:field$=:filter', done => {
             request
                 .get('/users?givenname$=' + users.dominik.givenname.slice(-3))
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
                 });
         });
 
-        it('should filter contains matches when ?:field*=:filter', function(done) {
+        it('should filter contains matches when ?:field*=:filter', done => {
             request
                 .get('/users?givenname*=' + users.dominik.givenname.substring(2,4))
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, expected);
                     done();
@@ -339,32 +336,32 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource?fields=:fields', function() {
-        it('should create a partial response containing only :fields properties', function(done) {
+    describe('   GET /:resource?fields=:fields', () => {
+        it('should create a partial response containing only :fields properties', done => {
             request
                 .get('/users?fields=givenname&include_docs=true')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
-                    assert.deepEqual(res.body, _.chain(users).values().map(function(user) { return _.pick(user, 'id', 'givenname'); }).value());
+                    assert.deepEqual(res.body, _.chain(users).values().map(user => { return _.pick(user, 'id', 'givenname'); }).value());
                     done();
                 });
         });
 
-        it('should be ignored if ?include_docs=true is not set', function(done) {
+        it('should be ignored if ?include_docs=true is not set', done => {
             request
                 .get('/users')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(e1, expected) {
+                .end((e1, expected) => {
                     if (e1) { done(e1); }
 
                     request
                         .get('/users?fields=givenname')
                         .set('Accept', 'application/json')
                         .expect(200)
-                        .end(function(e2, actual) {
+                        .end((e2, actual) => {
                             if (e2) { done(e2); }
                             assert.deepEqual(actual.body, expected.body);
                             done();
@@ -373,15 +370,15 @@ describe('', function() {
         });
     });
 
-    describe('  POST /:resource', function() {
-        it('should create a new resource from req.body', function(done) {
-            User.count().then(function(len) {
+    describe('  POST /:resource', () => {
+        it('should create a new resource from req.body', done => {
+            User.count().then(len => {
                 request
                     .post('/users')
                     .set('Accept', 'application/json')
                     .send({ givenname: 'Rick', lastname: 'Astley' })
                     .expect(200)
-                    .end(function(err, res) {
+                    .end((err, res) => {
                         if (err) { done(err); }
                         assert.equal(res.body, '/users/' + (len + 1));
                         done();
@@ -390,15 +387,13 @@ describe('', function() {
         });
     });
 
-    describe('   PUT /:resource', function() {
-        it('should bulk update resources as defined in req.body', function(done) {
-            var foo = {id: 1, givenname: 'F', lastname: 'oo'}
-              , bar = {id: 2, givenname: 'B', lastname: 'ar'};
+    describe('   PUT /:resource', () => {
+        it('should bulk update resources as defined in req.body', done => {
+            const foo = {id: 1, givenname: 'F', lastname: 'oo'};
+            const bar = {id: 2, givenname: 'B', lastname: 'ar'};
 
-            User.findAll().then(function(raw) {
-                var results = _.map(raw, function(r) {
-                    return clean(r.dataValues);
-                });
+            User.findAll().then(raw => {
+                const results = raw.map(r => clean(r.dataValues));
 
                 assert.deepEqual(users.dominik, _.findWhere(results, {id:foo.id}));
                 assert.deepEqual(users.hanna, _.findWhere(results, {id:bar.id}));
@@ -408,12 +403,10 @@ describe('', function() {
                     .set('Accept', 'application/json')
                     .send([foo, bar])
                     .expect(200)
-                    .end(function(err) {
+                    .end(err => {
                         if (err) { done(err); }
-                        User.findAll().then(function(all) {
-                            var actuals = _.map(all, function(r) {
-                                return clean(r.dataValues);
-                            });
+                        User.findAll().then(all => {
+                            const actuals = all.map(r => clean(r.dataValues));
                             assert.deepEqual(foo, _.findWhere(actuals, {id: foo.id}));
                             assert.deepEqual(bar, _.findWhere(actuals, {id: bar.id}));
                             done();
@@ -423,17 +416,17 @@ describe('', function() {
         });
     });
 
-    describe('DELETE /:resource', function() {
-        it('should delete all resources of type :resource', function(done) {
-            User.count().then(function(numentries) {
+    describe('DELETE /:resource', () => {
+        it('should delete all resources of type :resource', done => {
+            User.count().then(numentries => {
                 assert.ok(numentries > 0);
                 request
                     .delete('/users')
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err) {
+                    .end(err => {
                         if (err) { done(err); }
-                        User.count().then(function(numentries) {
+                        User.count().then(numentries => {
                             assert.equal(numentries, 0);
                             done();
                         });
@@ -442,27 +435,27 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id', function() {
-        it('should get the resource specified', function(done) {
+    describe('   GET /:resource/:id', () => {
+        it('should get the resource specified', done => {
             request
                 .get('/users/1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
-                    User.findOne(1).then(function(expected) {
+                    User.findOne(1).then(expected => {
                         assert.deepEqual(res.body, clean(expected.dataValues));
                         done();
                     });
                 });
         });
 
-        it('should replace foreign keys with resource urls', function(done) {
+        it('should replace foreign keys with resource urls', done => {
             request
                 .get('/couples/1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, {
                         id: 1,
@@ -474,9 +467,9 @@ describe('', function() {
         });
     });
 
-    _.each(['application/json', 'application/xml', 'text/x-yaml'], function(mime) {
-        describe('   GET /:resource/:id -H "Accept: ' + mime + '"', function() {
-            it('should deliver /:resource/:id as ' + mime, function(done) {
+    _.each(['application/json', 'application/xml', 'text/x-yaml'], mime => {
+        describe(`   GET /:resource/:id -H "Accept: ${mime}"`, () => {
+            it('should deliver /:resource/:id as ' + mime, done => {
                 request
                     .get('/users/1')
                     .set('Accept', mime)
@@ -491,20 +484,20 @@ describe('', function() {
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function(extandformat) {
-        describe('   GET /:resource/:id.' + extandformat[0], function() {
-            it('should be equivalent to `GET /:resource/:id` with `Accept: ' + extandformat[1] + '`', function(done) {
+    }), extandformat => {
+        describe('   GET /:resource/:id.' + extandformat[0], () => {
+            it(`should be equivalent to 'GET /:resource/:id' with 'Accept: ${extandformat[1]}'`, done => {
                 request
                     .get('/users/1.' + extandformat[0])
                     .expect(200)
-                    .end(function(err, actual) {
+                    .end((err, actual) => {
                         if (err) { done(err); }
 
                         request
                             .get('/users/1')
                             .set('Accept', extandformat[1])
                             .expect(200)
-                            .end(function(e, expected) {
+                            .end((e, expected) => {
                                 if (e) { done(e); }
                                 assert.deepEqual(actual.text, expected.text);
                                 done();
@@ -514,13 +507,13 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id.:ext', function() {
-        it('should return an error for unknown extensions', function(done) {
+    describe('   GET /:resource/:id.:ext', () => {
+        it('should return an error for unknown extensions', done => {
             request
                 .get('/users/1.unknown')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.ok('url' in res.body);
                     assert.deepEqual(_.omit(res.body, ['url']), expressRestOrmErrors.UNKNOWN_TYPE.error);
@@ -529,13 +522,13 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id?include_docs=true', function() {
-        it('should expand foreign keys to resources', function(done) {
+    describe('   GET /:resource/:id?include_docs=true', () => {
+        it('should expand foreign keys to resources', done => {
             request
                 .get('/couples/1?include_docs=true')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, {
                         id: 1,
@@ -547,13 +540,13 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id?fields=:fields', function() {
-        it('should return a partial response matching :fields', function(done) {
+    describe('   GET /:resource/:id?fields=:fields', () => {
+        it('should return a partial response matching :fields', done => {
             request
                 .get('/users/1?fields=givenname')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.body, _.pick(users.dominik, 'id', 'givenname'));
                     done();
@@ -561,8 +554,8 @@ describe('', function() {
         });
     });
 
-    describe('  POST /:resource/:id', function() {
-        it('should return an error as this is not allowed', function(done) {
+    describe('  POST /:resource/:id', () => {
+        it('should return an error as this is not allowed', done => {
             var rick = { givenname: 'Rick', lastname: 'Astley' };
 
             request
@@ -570,7 +563,7 @@ describe('', function() {
                 .set('Accept', 'application/json')
                 .send(rick)
                 .expect(400)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.ok(_.has(res.body, 'reason'));
                     assert.ok(_.has(res.body, 'url'));
@@ -579,8 +572,8 @@ describe('', function() {
         });
     });
 
-    describe('   PUT /:resource/:id', function() {
-        it('should update the resource with the data from req.body', function(done) {
+    describe('   PUT /:resource/:id', () => {
+        it('should update the resource with the data from req.body', done => {
             var rick = { givenname: 'Rick', lastname: 'Astley' };
 
             request
@@ -588,14 +581,14 @@ describe('', function() {
                 .set('Accept', 'application/json')
                 .send(rick)
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
 
                     request
                         .get(res.body)
                         .set('Accept', 'application/json')
                         .expect(200)
-                        .end(function(e, r) {
+                        .end((e, r) => {
                             if (e) { done(e); }
                             assert.deepEqual(r.body, _.extend({ id: 1 }, rick));
                             done();
@@ -604,15 +597,15 @@ describe('', function() {
         });
     });
 
-    describe('DELETE /:resource/:id', function() {
-        it('should delete the resource', function(done) {
+    describe('DELETE /:resource/:id', () => {
+        it('should delete the resource', done => {
             request
                 .delete('/users/1')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err) {
+                .end(err => {
                     if (err) { done(err); }
-                    User.findOne(1).then(function(res) {
+                    User.findOne(1).then(res => {
                         assert.equal(res, null);
                         done();
                     });
@@ -620,37 +613,37 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id/:field', function() {
-        it('should deliver the field only if :field is no foreign key', function(done) {
+    describe('   GET /:resource/:id/:field', () => {
+        it('should deliver the field only if :field is no foreign key', done => {
             request
                 .get('/users/1/givenname')
                 .set('Accept', 'application/json')
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.equal(res.body, users.dominik.givenname);
                     done();
                 });
         });
 
-        it('should redirect to the nested field if :field is a foreign key', function(done) {
+        it('should redirect to the nested field if :field is a foreign key', done => {
             request
                 .get('/couples/1/one')
                 .set('Accept', 'application/json')
                 .expect(302)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(res.headers.location, '/users/' + users.dominik.id);
                     done();
                 });
         });
 
-        it('should respond with 400 Bad Request if :field is unknown', function(done) {
+        it('should respond with 400 Bad Request if :field is unknown', done => {
             request
                 .get('/users/1/foo')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(_.omit(res.body, 'url'), expressRestOrmErrors.UNKNOWN_FIELD.error);
                     done();
@@ -662,61 +655,61 @@ describe('', function() {
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function(extandformat) {
-        describe('   GET /:resource/:id/:field.' + extandformat[0], function() {
-            it('should be equivalent to `GET /:resource/:id/:field` with `Accept: ' + extandformat[1] + '`', function(done) {
+    }), extandformat => {
+        describe('   GET /:resource/:id/:field.' + extandformat[0], () => {
+            it(`should be equivalent to 'GET /:resource/:id/:field' with 'Accept: ${extandformat[1]}'`, done => {
                 async.parallel([
-                    function(cb) {
+                    cb => {
                         request
                             .get('/users/1/givenname.' + extandformat[0])
                             .set('Accept', extandformat[1])
                             .expect(200)
-                            .end(function(e1, actual) {
+                            .end((e1, actual) => {
                                 if (e1) { done(e1); }
 
                                 request
                                     .get('/users/1/givenname')
                                     .set('Accept', extandformat[1])
                                     .expect(200)
-                                    .end(function(e2, expected) {
+                                    .end((e2, expected) => {
                                         if (e2) { done(e2); }
                                         assert.deepEqual(actual.text, expected.text);
                                         cb();
                                     });
                             });
                     },
-                    function(cb) {
+                    cb => {
                         request
                             .get('/couples/1/one.' + extandformat[0])
                             .set('Accept', extandformat[1])
                             .expect(302)
-                            .end(function(e1, actual) {
+                            .end((e1, actual) => {
                                 if (e1) { done(e1); }
 
                                 request
                                     .get('/couples/1/one')
                                     .set('Accept', extandformat[1])
                                     .expect(302)
-                                    .end(function(e2, expected) {
+                                    .end((e2, expected) => {
                                         if (e2) { done(e2); }
                                         assert.equal(actual.headers.location, expected.headers.location);
                                         cb();
                                     });
                             });
                     },
-                    function(cb) {
+                    cb => {
                         request
                             .get('/users/1/unknown.' + extandformat[0])
                             .set('Accept', extandformat[1])
                             .expect(400)
-                            .end(function(e1, actual) {
+                            .end((e1, actual) => {
                                 if (e1) { done(e1); }
 
                                 request
                                     .get('/users/1/unknown')
                                     .set('Accept', extandformat[1])
                                     .expect(400)
-                                    .end(function(e2, expected) {
+                                    .end((e2, expected) => {
                                         if (e2) { done(e2); }
                                         assert.deepEqual(actual.body, expected.body);
                                         cb();
@@ -728,13 +721,13 @@ describe('', function() {
         });
     });
 
-    describe('   GET /:resource/:id/:field.:ext', function() {
-        it('should return an error for unknown extensions', function(done) {
+    describe('   GET /:resource/:id/:field.:ext', () => {
+        it('should return an error for unknown extensions', done => {
             request
                 .get('/users/1/givenname.unknown')
                 .set('Accept', 'application/json')
                 .expect(400)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.deepEqual(_.omit(res.body, 'url'), expressRestOrmErrors.UNKNOWN_TYPE.error);
                     done();
@@ -742,14 +735,14 @@ describe('', function() {
         });
     });
 
-    _.each(_.values(expressRestOrmErrors), function(error) {
-        describe('   GET /_errors/' + error.slug, function() {
-            it('should inform in detail about "' + error.error.reason + '"', function(done) {
+    _.each(_.values(expressRestOrmErrors), error => {
+        describe('   GET /_errors/' + error.slug, () => {
+            it(`should inform in detail about "${error.error.reason}"`, done => {
                 request
                     .get('/_errors/' + error.slug)
                     .set('Accept', 'application/json')
                     .expect(200)
-                    .end(function(err, res) {
+                    .end((err, res) => {
                         if (err) { done(err); }
                         assert.deepEqual(res.body, error.description);
                         done();
@@ -758,8 +751,8 @@ describe('', function() {
         });
     });
 
-    describe('   GET /*?method=:method', function() {
-        it('should perform HTTP :method instead of HTTP GET', function(done) {
+    describe('   GET /*?method=:method', () => {
+        it('should perform HTTP :method instead of HTTP GET', done => {
             var rick = {givenname: 'Rick', lastname: 'Astley'};
 
             request
@@ -767,22 +760,22 @@ describe('', function() {
                 .set('Accept', 'application/json')
                 .send(rick)
                 .expect(200)
-                .end(function(e1) {
+                .end(e1 => {
                     if (e1) { done(e1); }
 
-                    User.findOne(1).then(function(u1) {
+                    User.findOne(1).then(u1 => {
                         var expected = u1.dataValues;
 
-                        User.upsert(users.dominik).then(function() {
+                        User.upsert(users.dominik).then(() => {
                             request
                                 .get('/users/1?method=PUT')
                                 .set('Accept', 'application/json')
                                 .send(rick)
                                 .expect(200)
-                                .end(function(e2) {
+                                .end(e2 => {
                                     if (e2) { done(e2); }
 
-                                    User.findOne(1).then(function(u2) {
+                                    User.findOne(1).then(u2 => {
                                         var actual = u2.dataValues;
                                         assert.deepEqual(actual, expected);
                                         done();
@@ -794,14 +787,14 @@ describe('', function() {
         });
     });
 
-    describe('     * /*?suppress_response_codes=true', function() {
-        it('should set status=200 and serve the original status in res.body', function(done) {
+    describe('     * /*?suppress_response_codes=true', () => {
+        it('should set status=200 and serve the original status in res.body', done => {
             request
                 .post('/users/1?suppress_response_codes=true')
                 .set('Accept', 'application/json')
                 .send({ givenname: 'Rick', lastname: 'Astley' })
                 .expect(200)
-                .end(function(err, res) {
+                .end((err, res) => {
                     if (err) { done(err); }
                     assert.equal(res.body.status, 400);
                     done();
