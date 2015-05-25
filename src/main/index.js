@@ -114,7 +114,7 @@ export default function(models) {
     // ===== /_errors/:slug =============================================================
 
     _.values(errors).forEach(err => {
-        api.get('/' + errorpathelement + '/' + err.slug, (req, res, next) => {
+        api.get(`/${errorpathelement}/${err.slug}`, (req, res, next) => {
             res.format(format(
                 xmlbuilder('error'),
                 res,
@@ -128,9 +128,9 @@ export default function(models) {
      * for examples, let `model` be `foo`
      */
     models.forEach(model => {
-        const collection = '/' + model.getTableName();
-        const resource = collection + '/:id';
-        const field = resource + '/:field';
+        const collection = `/${model.getTableName()}`;
+        const resource = `${collection}/:id`;
+        const field = `${resource}/:field`;
         const foreignkeys = _.pairs(model.attributes)
                             .filter(attributeOptions => 'referencesKey' in attributeOptions[1])
                             .map(attributeOptions => { return {
@@ -223,7 +223,7 @@ export default function(models) {
             }
 
             return new Promise((resolve, reject) => {
-                model.findOne(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(result => {
+                model.findById(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(result => {
                     // ?include_docs=true
                     if (shouldIncludeDocs) {
                         Q.all(foreignkeys.map(foreignkey => {
@@ -233,7 +233,7 @@ export default function(models) {
                             // (e.g. foreignkey could be 'users.id', but model name is 'user')
                             const foreignmodel = _.find(models, m => m.getTableName() === foreigntable);
 
-                            return foreignmodel.findOne(result.dataValues[foreignkey.attribute]);
+                            return foreignmodel.findById(result.dataValues[foreignkey.attribute]);
                         })).then(foreignvalues => {
                             _.zip(foreignkeys, foreignvalues).forEach(keyValue => {
                                 result.dataValues[keyValue[0].attribute] = cleanitem(keyValue[1]);

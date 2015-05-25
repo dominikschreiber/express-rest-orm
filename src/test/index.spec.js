@@ -439,7 +439,7 @@ describe('', () => {
                 .expect(200)
                 .end((err, res) => {
                     if (err) { done(err); }
-                    User.findOne(1).then(expected => {
+                    User.findById(1).then(expected => {
                         assert.deepEqual(res.body, clean(expected.dataValues));
                         done();
                     });
@@ -601,7 +601,7 @@ describe('', () => {
                 .expect(200)
                 .end(err => {
                     if (err) { done(err); }
-                    User.findOne(1).then(res => {
+                    User.findById(1).then(res => {
                         assert.equal(res, null);
                         done();
                     });
@@ -733,7 +733,7 @@ describe('', () => {
 
     _.values(expressRestOrmErrors).forEach(error => {
         describe(`   GET /_errors/${error.slug}`, () => {
-            it(`should inform in detail about "${error.error.reason}"`, done => {
+            it(`should inform in detail about '${error.error.reason}'`, done => {
                 request
                     .get(`/_errors/${error.slug}`)
                     .set('Accept', 'application/json')
@@ -749,7 +749,7 @@ describe('', () => {
 
     describe('   GET /*?method=:method', () => {
         it('should perform HTTP :method instead of HTTP GET', done => {
-            var rick = {givenname: 'Rick', lastname: 'Astley'};
+            let rick = {givenname: 'Rick', lastname: 'Astley'};
 
             request
                 .put('/users/1')
@@ -759,8 +759,8 @@ describe('', () => {
                 .end(e1 => {
                     if (e1) { done(e1); }
 
-                    User.findOne(1).then(u1 => {
-                        var expected = u1.dataValues;
+                    User.findById(1).then(u1 => {
+                        let expected = u1.dataValues;
 
                         User.upsert(users.dominik).then(() => {
                             request
@@ -771,7 +771,7 @@ describe('', () => {
                                 .end(e2 => {
                                     if (e2) { done(e2); }
 
-                                    User.findOne(1).then(u2 => {
+                                    User.findById(1).then(u2 => {
                                         var actual = u2.dataValues;
                                         assert.deepEqual(actual, expected);
                                         done();

@@ -431,7 +431,7 @@ describe('', function () {
                 if (err) {
                     done(err);
                 }
-                User.findOne(1).then(function (expected) {
+                User.findById(1).then(function (expected) {
                     assert.deepEqual(res.body, clean(expected.dataValues));
                     done();
                 });
@@ -567,7 +567,7 @@ describe('', function () {
                 if (err) {
                     done(err);
                 }
-                User.findOne(1).then(function (res) {
+                User.findById(1).then(function (res) {
                     assert.equal(res, null);
                     done();
                 });
@@ -675,7 +675,7 @@ describe('', function () {
 
     _.values(expressRestOrmErrors).forEach(function (error) {
         describe('   GET /_errors/' + error.slug, function () {
-            it('should inform in detail about "' + error.error.reason + '"', function (done) {
+            it('should inform in detail about \'' + error.error.reason + '\'', function (done) {
                 request.get('/_errors/' + error.slug).set('Accept', 'application/json').expect(200).end(function (err, res) {
                     if (err) {
                         done(err);
@@ -696,7 +696,7 @@ describe('', function () {
                     done(e1);
                 }
 
-                User.findOne(1).then(function (u1) {
+                User.findById(1).then(function (u1) {
                     var expected = u1.dataValues;
 
                     User.upsert(users.dominik).then(function () {
@@ -705,7 +705,7 @@ describe('', function () {
                                 done(e2);
                             }
 
-                            User.findOne(1).then(function (u2) {
+                            User.findById(1).then(function (u2) {
                                 var actual = u2.dataValues;
                                 assert.deepEqual(actual, expected);
                                 done();

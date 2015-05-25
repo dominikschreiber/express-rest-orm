@@ -152,8 +152,8 @@ exports['default'] = function (models) {
      */
     models.forEach(function (model) {
         var collection = '/' + model.getTableName();
-        var resource = collection + '/:id';
-        var field = resource + '/:field';
+        var resource = '' + collection + '/:id';
+        var field = '' + resource + '/:field';
         var foreignkeys = _.pairs(model.attributes).filter(function (attributeOptions) {
             return 'referencesKey' in attributeOptions[1];
         }).map(function (attributeOptions) {
@@ -258,7 +258,7 @@ exports['default'] = function (models) {
             }
 
             return new Promise(function (resolve, reject) {
-                model.findOne(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(function (result) {
+                model.findById(req.params.id.replace(/\.[^\.]+$/g, ''), options).then(function (result) {
                     // ?include_docs=true
                     if (shouldIncludeDocs) {
                         Q.all(foreignkeys.map(function (foreignkey) {
@@ -270,7 +270,7 @@ exports['default'] = function (models) {
                                 return m.getTableName() === foreigntable;
                             });
 
-                            return foreignmodel.findOne(result.dataValues[foreignkey.attribute]);
+                            return foreignmodel.findById(result.dataValues[foreignkey.attribute]);
                         })).then(function (foreignvalues) {
                             _.zip(foreignkeys, foreignvalues).forEach(function (keyValue) {
                                 result.dataValues[keyValue[0].attribute] = cleanitem(keyValue[1]);
