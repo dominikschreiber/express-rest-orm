@@ -1,5 +1,9 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 var _lodash = require('lodash');
@@ -32,14 +36,14 @@ var xmldefaults = {
     singularizeChildren: true,
     allowAttributes: true,
     manifest: true
-},
-    errorpathelement = '_errors',
-    extensionmappings = {
+};
+var errorpathelement = '_errors';
+var extensionmappings = {
     json: 'json',
     xml: 'xml',
     yml: 'text/x-yaml'
-},
-    defaults = {
+};
+var defaults = {
     limit: 10,
     offset: 0
 };
@@ -53,7 +57,8 @@ var xmldefaults = {
  * for examples in this class, assume it is
  * mounted at '/api'
  */
-module.exports = function (models) {
+
+exports['default'] = function (models) {
     /**
      * creates the {{pseudo-mime}} => {{serialization}}
      * mappings required by the res.format of express
@@ -95,15 +100,11 @@ module.exports = function (models) {
      * given a root element (normally model.getTableName())
      */
     var xmlbuilder = function xmlbuilder(root) {
-        return new EasyXml['default'](_.extend({
-            rootElement: root
-        }, xmldefaults));
+        return new EasyXml['default'](_.extend({ rootElement: root }, xmldefaults));
     };
 
     var errorbuilder = function errorbuilder(req, err) {
-        return _.extend({
-            url: req.baseUrl + '/' + errorpathelement + '/' + err.slug
-        }, err.error);
+        return _.extend({ url: '' + req.baseUrl + '/' + errorpathelement + '/' + err.slug }, err.error);
     };
 
     var api = new _express.Router();
@@ -449,4 +450,6 @@ module.exports = function (models) {
 
     return api;
 };
+
+module.exports = exports['default'];
 //# sourceMappingURL=index.js.map

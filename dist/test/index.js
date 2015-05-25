@@ -51,7 +51,7 @@ var orm = new Sequelize['default']('example', 'root', '', {
         idle: 10000
     },
     logging: false,
-    storage: __dirname + '/db.sqlite'
+    storage: '' + __dirname + '/db.sqlite'
 });
 
 var User = orm.define('user', {
@@ -81,15 +81,15 @@ var users = {
     hanna: { id: 2, givenname: 'Hanna', lastname: 'Schreiber' }
 };
 
-var app = false;
-var request = false;
-
 var clean = function clean(data) {
     return _.omit(data, ['createdAt', 'updatedAt']);
 };
 var randomstring = function randomstring(len) {
     return Math.random().toString(36).substring(!len ? 12 : len);
 };
+
+var app = false;
+var request = false;
 
 describe('', function () {
     beforeEach(function (done) {
@@ -143,7 +143,7 @@ describe('', function () {
         });
     });
 
-    _.each(['application/json', 'application/xml', 'text/x-yaml'], function (mime) {
+    ['application/json', 'application/xml', 'text/x-yaml'].forEach(function (mime) {
         describe('   GET /:resource -H "Accept: ' + mime + '"', function () {
             it('should deliver /:resource as ' + mime, function (done) {
                 request.get('/users').set('Accept', mime).expect(200).expect('Content-Type', new RegExp(mime, 'g')).end(done);
@@ -151,11 +151,11 @@ describe('', function () {
         });
     });
 
-    _.each(_.pairs({
+    _.pairs({
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function (endingandmime) {
+    }).forEach(function (endingandmime) {
         describe('   GET /:resource.' + endingandmime[0], function () {
             it('should be equivalent to \'GET /:resource\' with \'Accept: ' + endingandmime[1] + '\'', function (done) {
                 request.get('/users.' + endingandmime[0]).expect(200).end(function (err, actual) {
@@ -287,7 +287,7 @@ describe('', function () {
                     if (err) {
                         done(err);
                     }
-                    assert.deepEqual(res.body, expected.concat(['/users/' + (_.keys(users).length + 1)]));
+                    assert.deepEqual(res.body, expected.concat(['/users/' + (Object.keys(users).length + 1)]));
                     done();
                 });
             });
@@ -340,9 +340,9 @@ describe('', function () {
                 if (err) {
                     done(err);
                 }
-                assert.deepEqual(res.body, _.chain(users).values().map(function (user) {
+                assert.deepEqual(res.body, _.values(users).map(function (user) {
                     return _.pick(user, 'id', 'givenname');
-                }).value());
+                }));
                 done();
             });
         });
@@ -453,7 +453,7 @@ describe('', function () {
         });
     });
 
-    _.each(['application/json', 'application/xml', 'text/x-yaml'], function (mime) {
+    ['application/json', 'application/xml', 'text/x-yaml'].forEach(function (mime) {
         describe('   GET /:resource/:id -H "Accept: ' + mime + '"', function () {
             it('should deliver /:resource/:id as ' + mime, function (done) {
                 request.get('/users/1').set('Accept', mime).expect(200).expect('Content-Type', new RegExp(mime, 'g')).end(done);
@@ -461,11 +461,11 @@ describe('', function () {
         });
     });
 
-    _.each(_.pairs({
+    _.pairs({
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function (extandformat) {
+    }).forEach(function (extandformat) {
         describe('   GET /:resource/:id.' + extandformat[0], function () {
             it('should be equivalent to \'GET /:resource/:id\' with \'Accept: ' + extandformat[1] + '\'', function (done) {
                 request.get('/users/1.' + extandformat[0]).expect(200).end(function (err, actual) {
@@ -607,11 +607,11 @@ describe('', function () {
         });
     });
 
-    _.each(_.pairs({
+    _.pairs({
         json: 'application/json',
         xml: 'application/xml',
         yml: 'text/x-yaml'
-    }), function (extandformat) {
+    }).forEach(function (extandformat) {
         describe('   GET /:resource/:id/:field.' + extandformat[0], function () {
             it('should be equivalent to \'GET /:resource/:id/:field\' with \'Accept: ' + extandformat[1] + '\'', function (done) {
                 async.parallel([function (cb) {
@@ -673,7 +673,7 @@ describe('', function () {
         });
     });
 
-    _.each(_.values(expressRestOrmErrors), function (error) {
+    _.values(expressRestOrmErrors).forEach(function (error) {
         describe('   GET /_errors/' + error.slug, function () {
             it('should inform in detail about "' + error.error.reason + '"', function (done) {
                 request.get('/_errors/' + error.slug).set('Accept', 'application/json').expect(200).end(function (err, res) {
