@@ -9,21 +9,21 @@ import {Router} from 'express';
 
 import * as errors from './errors';
 
-var xmldefaults = {
-        singularizeChildren: true,
-        allowAttributes: true,
-        manifest: true
-    }
-  , errorpathelement = '_errors'
-  , extensionmappings = {
-        json: 'json',
-        xml: 'xml',
-        yml: 'text/x-yaml'
-    }
-  , defaults = {
-        limit: 10,
-        offset: 0
-    };
+const xmldefaults = {
+    singularizeChildren: true,
+    allowAttributes: true,
+    manifest: true
+};
+const errorpathelement = '_errors';
+const extensionmappings = {
+    json: 'json',
+    xml: 'xml',
+    yml: 'text/x-yaml'
+};
+const defaults = {
+    limit: 10,
+    offset: 0
+};
 
 /**
  * creates an express router middleware that
@@ -34,12 +34,12 @@ var xmldefaults = {
  * for examples in this class, assume it is
  * mounted at '/api'
  */
-module.exports = models => {
+export default function(models) {
     /**
      * creates the {{pseudo-mime}} => {{serialization}}
      * mappings required by the res.format of express
      */
-    let format = (xml, res, object) => {
+    const format = (xml, res, object) => {
         return {
             xml: () => {
                 res
@@ -62,33 +62,21 @@ module.exports = models => {
      * turns sequelize item to plain javascript object,
      * omits `createdAt` and `updatedAt` values
      */
-    let cleanitem = item => {
-        return _.omit(item.dataValues, 'createdAt', 'updatedAt');
-    };
+    const cleanitem = item => _.omit(item.dataValues, 'createdAt', 'updatedAt');
 
     /**
      * turns a list of sequelize items to plain javascript objects
      * @see #cleanitem(item)
      */
-    let cleanitems = items => {
-        return items.map(item => { return cleanitem(item); });
-    };
+    const cleanitems = items => items.map(item => cleanitem(item));
 
     /**
      * creates an xml renderer based on EasyXml
      * given a root element (normally model.getTableName())
      */
-    let xmlbuilder = root => {
-        return new EasyXml.default(_.extend({
-            rootElement: root
-        }, xmldefaults));
-    };
+    const xmlbuilder = root => new EasyXml.default(_.extend({ rootElement: root }, xmldefaults));
 
-    let errorbuilder = (req, err) => {
-        return _.extend({
-            url: req.baseUrl + '/' + errorpathelement + '/' + err.slug
-        }, err.error);
-    };
+    const errorbuilder = (req, err) => _.extend({ url: `${req.baseUrl}/${errorpathelement}/${err.slug}` }, err.error);
 
     let api = new Router();
 
@@ -151,7 +139,7 @@ module.exports = models => {
                             }; });
         const xml = xmlbuilder(model.getTableName());
 
-        let sendwithstatus = (res, status, body) => {
+        const sendwithstatus = (res, status, body) => {
             if (res.req.query.suppress_response_codes === 'true') {
                 _.extend(body, { status: status });
             } else {
@@ -160,9 +148,9 @@ module.exports = models => {
             res.format(format(xml, res, body));
         };
 
-        let resourceurl = (req, id) => req.baseUrl + collection + '/' + id;
+        const resourceurl = (req, id) => req.baseUrl + collection + '/' + id;
 
-        let getcollection = req => {
+        const getcollection = req => {
             let options = {
                     limit: defaults.limit, 
                     offset: defaults.offset
@@ -225,7 +213,7 @@ module.exports = models => {
             });
         };
 
-        let getresource = req => {
+        const getresource = req => {
             const shouldIncludeDocs = req.query.include_docs == 'true';
             let options = {};
 
@@ -424,4 +412,4 @@ module.exports = models => {
     });
 
     return api;
-};
+}
