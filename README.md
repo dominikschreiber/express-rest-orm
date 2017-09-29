@@ -6,6 +6,8 @@
 [![npm-license](https://img.shields.io/npm/l/express-rest-orm.svg?style=flat-square)](https://github.com/dominikschreiber/express-rest-orm/blob/master/LICENSE)
 [![twitter](https://img.shields.io/badge/%40-domischreib-55acee.svg?style=flat-square)](https://twitter.com/@domischreib)
 
+**HEADS UP:** *This project is no longer actively developed.* Feel free to use it in the state it is, but I don't find the time and motivation to invest into this project.
+
 *express-rest-orm* generates an [express](http://expressjs.com) Router
 that serves a list of [sequelize](http://sequelizejs.com) Models via a
 full-featured REST api.
